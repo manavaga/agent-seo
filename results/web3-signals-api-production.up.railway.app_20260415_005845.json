@@ -1,0 +1,285 @@
+{
+  "agentproof_version": "0.1",
+  "url": "https://web3-signals-api-production.up.railway.app",
+  "timestamp": "2026-04-14T19:28:34.051686+00:00",
+  "total_score": 77,
+  "max_score": 100,
+  "grade": "B",
+  "percentage": 77.0,
+  "categories": [
+    {
+      "name": "IDENTITY",
+      "score": 13,
+      "max_points": 20,
+      "checks": [
+        {
+          "name": "A2A Agent Card (/.well-known/agent.json)",
+          "passed": true,
+          "points": 5,
+          "max_points": 5,
+          "detail": "Found with 14 fields"
+        },
+        {
+          "name": "Agent Card has 'name'",
+          "passed": true,
+          "points": 2,
+          "max_points": 2,
+          "detail": "Web3 Signals Agent"
+        },
+        {
+          "name": "Agent Card has 'version'",
+          "passed": true,
+          "points": 2,
+          "max_points": 2,
+          "detail": "0.2.0"
+        },
+        {
+          "name": "Agent Card has 'description'",
+          "passed": true,
+          "points": 2,
+          "max_points": 2,
+          "detail": "AI-powered crypto signal intelligence. Fuses whale tracking, derivatives positio"
+        },
+        {
+          "name": "Agent Card has 'url'",
+          "passed": true,
+          "points": 2,
+          "max_points": 2,
+          "detail": "https://web3-signals-api-production.up.railway.app"
+        },
+        {
+          "name": "Agent Card has provider info",
+          "passed": false,
+          "points": 0,
+          "max_points": 2,
+          "detail": "Missing"
+        },
+        {
+          "name": "AGENTS.md (AAIF standard)",
+          "passed": false,
+          "points": 0,
+          "max_points": 3,
+          "detail": "Not found"
+        }
+      ]
+    },
+    {
+      "name": "CAPABILITIES",
+      "score": 25,
+      "max_points": 25,
+      "checks": [
+        {
+          "name": "Capabilities/skills declared",
+          "passed": true,
+          "points": 5,
+          "max_points": 5,
+          "detail": "6 capabilities found"
+        },
+        {
+          "name": "Capabilities have meaningful descriptions",
+          "passed": true,
+          "points": 3,
+          "max_points": 3,
+          "detail": "6/6 have descriptions >20 chars"
+        },
+        {
+          "name": "Tools have input/output schemas",
+          "passed": true,
+          "points": 3,
+          "max_points": 3,
+          "detail": "1/6 have schemas"
+        },
+        {
+          "name": "Performance metrics endpoint exists",
+          "passed": true,
+          "points": 5,
+          "max_points": 5,
+          "detail": "Found with 12 fields"
+        },
+        {
+          "name": "Per-capability performance breakdown",
+          "passed": true,
+          "points": 5,
+          "max_points": 5,
+          "detail": "Per-capability metrics available"
+        },
+        {
+          "name": "Structured capability metadata (pricing, protocols, frequency)",
+          "passed": true,
+          "points": 4,
+          "max_points": 4,
+          "detail": "Found: pricing, settlement, update_frequency, response_format, protocols"
+        }
+      ]
+    },
+    {
+      "name": "RELIABILITY",
+      "score": 11,
+      "max_points": 20,
+      "checks": [
+        {
+          "name": "Health endpoint (/health)",
+          "passed": true,
+          "points": 5,
+          "max_points": 5,
+          "detail": "Returns 6 fields"
+        },
+        {
+          "name": "Health includes uptime data",
+          "passed": false,
+          "points": 0,
+          "max_points": 3,
+          "detail": "No uptime info in health"
+        },
+        {
+          "name": "Health includes component/agent status",
+          "passed": true,
+          "points": 3,
+          "max_points": 3,
+          "detail": "Component status present"
+        },
+        {
+          "name": "Health includes data freshness",
+          "passed": false,
+          "points": 0,
+          "max_points": 3,
+          "detail": "No freshness info"
+        },
+        {
+          "name": "Error rate reporting",
+          "passed": true,
+          "points": 3,
+          "max_points": 3,
+          "detail": "Error metrics available"
+        },
+        {
+          "name": "SLA or latency guarantees published",
+          "passed": false,
+          "points": 0,
+          "max_points": 3,
+          "detail": "No SLA information"
+        }
+      ]
+    },
+    {
+      "name": "ECONOMICS",
+      "score": 10,
+      "max_points": 10,
+      "checks": [
+        {
+          "name": "Pricing information in Agent Card",
+          "passed": true,
+          "points": 3,
+          "max_points": 3,
+          "detail": "Pricing documented"
+        },
+        {
+          "name": "x402 payment discovery (/.well-known/x402.json)",
+          "passed": true,
+          "points": 3,
+          "max_points": 3,
+          "detail": "x402 config found (network: eip155:8453)"
+        },
+        {
+          "name": "Free vs paid endpoints documented",
+          "passed": true,
+          "points": 2,
+          "max_points": 2,
+          "detail": "Free/paid tiers documented"
+        },
+        {
+          "name": "Per-endpoint cost breakdown",
+          "passed": true,
+          "points": 2,
+          "max_points": 2,
+          "detail": "Per-endpoint pricing available"
+        }
+      ]
+    },
+    {
+      "name": "TRUST",
+      "score": 8,
+      "max_points": 15,
+      "checks": [
+        {
+          "name": "Performance/reputation endpoint",
+          "passed": true,
+          "points": 5,
+          "max_points": 5,
+          "detail": "Reputation data available"
+        },
+        {
+          "name": "Metrics verification method (beyond self-reported)",
+          "passed": false,
+          "points": 0,
+          "max_points": 3,
+          "detail": "Verification: self_reported"
+        },
+        {
+          "name": "Transparency/audit log available",
+          "passed": true,
+          "points": 3,
+          "max_points": 3,
+          "detail": "Audit log or history endpoint found"
+        },
+        {
+          "name": "Third-party verification or audit",
+          "passed": false,
+          "points": 0,
+          "max_points": 2,
+          "detail": "No external verification"
+        },
+        {
+          "name": "Receipt/interaction proof schema",
+          "passed": false,
+          "points": 0,
+          "max_points": 2,
+          "detail": "No receipt mechanism"
+        }
+      ]
+    },
+    {
+      "name": "DISCOVERABILITY",
+      "score": 10,
+      "max_points": 10,
+      "checks": [
+        {
+          "name": "MCP discovery (/.well-known/mcp.json)",
+          "passed": true,
+          "points": 2,
+          "max_points": 2,
+          "detail": "MCP discovery endpoint found"
+        },
+        {
+          "name": "A2A Agent Card for discovery",
+          "passed": true,
+          "points": 2,
+          "max_points": 2,
+          "detail": "A2A card available"
+        },
+        {
+          "name": "API documentation (/docs or /openapi.json)",
+          "passed": true,
+          "points": 2,
+          "max_points": 2,
+          "detail": "API docs available"
+        },
+        {
+          "name": "LLM-readable description (llms.txt)",
+          "passed": true,
+          "points": 2,
+          "max_points": 2,
+          "detail": "llms.txt found"
+        },
+        {
+          "name": "Crawler guidance (robots.txt)",
+          "passed": true,
+          "points": 2,
+          "max_points": 2,
+          "detail": "robots.txt found"
+        }
+      ]
+    }
+  ],
+  "errors": []
+}
