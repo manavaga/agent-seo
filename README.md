@@ -2,141 +2,75 @@
 
 **SEO for Agents** — Score any AI agent endpoint on trust & capability metrics.
 
-56,000 MCP servers exist. Not one lets another agent evaluate it before committing. This tool changes that.
-
-## The Problem
-
-An agent says "I book flights." Another agent can't ask: How many routes? What's your success rate? Can you get me a business class upgrade?
-
-Current agent endpoints describe **what** they do. None prove **how well** they do it.
-
-## What This Tool Does
-
-```
-$ python agentproof.py score https://your-agent-url.com
-
-AgentProof Trust Score: 77/100  Grade: B
-
-IDENTITY       13/20  ✓ A2A card, name, version, description
-CAPABILITIES   25/25  ✓ Skills declared, performance metrics, per-capability breakdown
-RELIABILITY    11/20  ✓ Health endpoint, component status, error reporting
-ECONOMICS      10/10  ✓ Pricing, x402 discovery, free/paid tiers
-TRUST           8/15  ✓ Reputation endpoint, audit log
-DISCOVERABILITY 10/10  ✓ MCP discovery, A2A card, docs, llms.txt
-```
-
-## Real Results
-
-| Agent | Score | Grade |
-|---|---|---|
-| Web3 Signals (reference implementation) | 77/100 | B |
-| Context7 (#1 MCP server, 52K stars) | 6/100 | F |
-
-The #1 MCP server in the world scores 6/100 on trust metrics.
+Agents can't prove they're good. This tool shows them how.
 
 ## Quick Start
 
 ```bash
 git clone https://github.com/manavaga/agent-seo.git
 cd agent-seo
-pip install httpx click rich
+pip install -e .
 
-# Score any agent (simplest way)
-python agentproof.py score https://your-agent-url.com
+# Score any agent
+agent-seo score https://your-agent-url.com
 
-# With MCP protocol handshake (v0.3)
-PYTHONPATH=src python -m agent_seo.cli score https://your-agent-url.com
+# HTTP checks only (faster, no MCP handshake)
+agent-seo score https://your-agent-url.com --skip-mcp
 
-# Skip MCP handshake (HTTP only, faster)
-PYTHONPATH=src python -m agent_seo.cli score https://your-agent-url.com --skip-mcp
-```
-
-### Options
-
-```bash
 # JSON output
-python agentproof.py score https://agent-url.com --format json
+agent-seo score https://your-agent-url.com --format json
 
-# Save results to results/ directory
-python agentproof.py score https://agent-url.com --save
-
-# Score multiple agents and compare
-python agentproof.py batch https://agent1.com https://agent2.com
-
-# CI/CD: fail if score below threshold
-PYTHONPATH=src python -m agent_seo.cli score https://agent-url.com --fail-below 60
+# Compare multiple agents
+agent-seo batch https://agent1.com https://agent2.com
 ```
 
-## What It Checks (6 Categories, 100 Points)
+## What It Checks
 
-### Identity (20 pts)
-Does the agent have a discoverable identity?
-- A2A Agent Card at `/.well-known/agent.json`
-- Name, version, description, provider info
-- AGENTS.md (AAIF standard)
+**7 categories. 130 total points.**
 
-### Capabilities (25 pts)
-Does the agent expose structured, measurable capability data?
-- Skills/capabilities declared with descriptions
-- Input/output schemas defined
-- Performance metrics per capability (success rate, latency)
-- Structured metadata (pricing, protocols, update frequency)
+| Category | Points | What It Measures |
+|---|---|---|
+| Identity | 20 | A2A Agent Card, name, version, provider, AGENTS.md |
+| Capabilities | 25 | Skills declared, descriptions, schemas, performance metrics |
+| Reliability | 20 | Health endpoint, uptime, component status, error rates |
+| Economics | 10 | Pricing, x402 discovery, free/paid tiers |
+| Trust | 15 | Reputation endpoint, verification method, audit log |
+| Discoverability | 10 | MCP discovery, A2A card, docs, llms.txt |
+| MCP Protocol | 30 | Handshake, protocol version, tool schemas, annotations |
 
-### Reliability (20 pts)
-Can you verify the agent is operational and reliable?
-- Health endpoint with component status
-- Uptime data, data freshness
-- Error rate reporting
-- SLA or latency guarantees
+## Example Output
 
-### Economics (10 pts)
-Is pricing transparent and machine-readable?
-- Pricing in Agent Card
-- x402 payment discovery
-- Free vs paid tiers documented
-- Per-endpoint cost breakdown
-
-### Trust (15 pts)
-Can you verify the agent's claims?
-- Performance/reputation endpoint
-- Verification method (self-reported vs receipt-derived)
-- Transparency/audit log
-- Third-party verification
-
-### Discoverability (10 pts)
-Can other agents and tools find this agent?
-- MCP discovery endpoint
-- A2A Agent Card
-- API documentation
-- LLM-readable description (llms.txt)
-
-## The Framework: Three Levels of Depth
-
-**Level 1 — Summary Metrics** (always present)
 ```
-"I book flights"
-→ 147 routes, 96.2% completion, 23% avg savings
-→ Business class upgrades: 340 secured, 41% success rate
+╭─────────────────────── agent-seo v0.3 ────────────────────────╮
+│ Agent SEO Trust Score: 72/130  Grade: C  (55%)                │
+│ https://web3-signals-api-production.up.railway.app            │
+╰───────────────────────────────────────────────────────────────╯
+
+IDENTITY       13/20  ✓ A2A card, name, version, description
+CAPABILITIES   20/25  ✓ Skills, metrics, structured metadata
+RELIABILITY    11/20  ✓ Health, component status, error reporting
+ECONOMICS      10/10  ✓ Pricing, x402, free/paid tiers
+TRUST           8/15  ✓ Reputation endpoint, audit log
+DISCOVERABILITY 10/10  ✓ MCP discovery, A2A card, docs, llms.txt
+MCP PROTOCOL    0/30  ✗ Handshake timeout
+
+TOP FIXES (highest impact first):
+
+  1. MCP handshake completes (+8 pts)
+     → Ensure MCP server is accessible via SSE or Streamable HTTP
+     Spec: https://modelcontextprotocol.io/specification/
+
+  2. Per-capability performance breakdown (+5 pts)
+     → Add GET /performance/{capability_id} endpoints
 ```
 
-**Level 2 — Evidence** (on request)
-```
-→ Savings by route (DEL-BOM: 31%, BLR-LHR: 18%)
-→ How "savings" is calculated (vs lowest same-day fare)
-→ Failure breakdown (3.8% = payment timeouts)
-```
+Every failed check includes **what to fix, how to fix it, and a link to the relevant spec.**
 
-**Level 3 — Raw Data** (for due diligence)
-```
-→ Full transaction log: route, date, price paid, comparison price
-→ Any agent can verify Level 1 claims independently
-```
+## How It Works
 
-Agents that expose more data get trusted more. Like SEO — richer structured data = better ranking.
+The tool checks HTTP endpoints and performs MCP protocol handshakes:
 
-## Scoring Methodology
-
-The tool checks HTTP endpoints that any agent CAN expose today:
+**HTTP checks:**
 - `/.well-known/agent.json` — A2A Agent Card
 - `/.well-known/mcp.json` — MCP discovery
 - `/.well-known/agents.md` — AAIF standard
@@ -146,29 +80,41 @@ The tool checks HTTP endpoints that any agent CAN expose today:
 - `/docs` or `/openapi.json` — API documentation
 - `/llms.txt` — LLM-readable description
 
-No MCP protocol handshake required for v0.1. Pure HTTP checks.
+**MCP protocol checks (SSE + Streamable HTTP):**
+- `initialize` handshake — does the server complete it?
+- `tools/list` — what tools, how many, schema quality
+- Tool annotations — safety classifications (readOnly, destructive)
+- Protocol version — is it current?
+
+## CI/CD Integration
+
+```bash
+# Fail build if score drops below threshold
+agent-seo score https://your-agent.com --fail-below 60
+```
+
+## Note on Scoring
+
+This tool measures **HTTP discoverability and MCP protocol compliance** — how well an agent communicates its capabilities to other agents programmatically.
+
+Servers designed for local stdio use (like most MCP servers for Claude Desktop/Cursor) will score low on HTTP checks because they weren't designed for remote discovery. That doesn't mean they're bad — it means they're not yet optimized for agent-to-agent evaluation.
+
+The industry is moving toward remote MCP (Streamable HTTP, OAuth). This tool measures readiness for that future.
 
 ## Roadmap
 
-- [x] v0.1 — HTTP endpoint scoring (current)
-- [ ] v0.2 — MCP protocol handshake (connect and inspect tools directly)
-- [ ] v0.3 — Receipt schema specification
-- [ ] v0.4 — Trust middleware (npm/pip package for automatic receipt generation)
-- [ ] v0.5 — Leaderboard and public scoring
-
-## Why "SEO for Agents"?
-
-When you Google something, the top results earned their spot through content quality, structured data, and trust signals. Agents need the same infrastructure — a way to communicate capability and earn trust programmatically.
-
-This project defines:
-1. **What agents should expose** (the endpoint standard)
-2. **How to measure it** (the scoring tool)
-3. **How to verify it** (the receipt and attestation layer — coming)
+- [x] v0.1 — HTTP endpoint scoring
+- [x] v0.2 — Package restructure + fix-it remediation guidance
+- [x] v0.3 — MCP protocol handshake (SSE + Streamable HTTP)
+- [ ] v0.4 — pip install from PyPI (`pip install agent-seo`)
+- [ ] v0.5 — Trust score badge for READMEs
+- [ ] v0.6 — GitHub Action for CI/CD
+- [ ] v1.0 — Protocol spec (SPEC.md)
 
 ## Contributing
 
 Found an agent that scores surprisingly high or low? Open an issue.
-Want to add a check? Submit a PR.
+Want to add a check? See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

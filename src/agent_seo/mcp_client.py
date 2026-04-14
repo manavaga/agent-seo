@@ -14,7 +14,7 @@ import httpx
 
 from .models import MCPInfo
 
-TIMEOUT = 15.0
+TIMEOUT = 30.0
 HEADERS = {"User-Agent": "AgentSEO/0.2 (mcp-handshake)"}
 
 
