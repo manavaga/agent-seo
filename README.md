@@ -37,24 +37,34 @@ The #1 MCP server in the world scores 6/100 on trust metrics.
 ## Quick Start
 
 ```bash
+git clone https://github.com/manavaga/agent-seo.git
+cd agent-seo
 pip install httpx click rich
-python agentproof.py score https://any-agent-url.com
+
+# Score any agent (simplest way)
+python agentproof.py score https://your-agent-url.com
+
+# With MCP protocol handshake (v0.3)
+PYTHONPATH=src python -m agent_seo.cli score https://your-agent-url.com
+
+# Skip MCP handshake (HTTP only, faster)
+PYTHONPATH=src python -m agent_seo.cli score https://your-agent-url.com --skip-mcp
 ```
 
 ### Options
 
 ```bash
-# Terminal output (default)
-python agentproof.py score https://agent-url.com
-
 # JSON output
 python agentproof.py score https://agent-url.com --format json
 
-# Save results
+# Save results to results/ directory
 python agentproof.py score https://agent-url.com --save
 
-# Score multiple agents
+# Score multiple agents and compare
 python agentproof.py batch https://agent1.com https://agent2.com
+
+# CI/CD: fail if score below threshold
+PYTHONPATH=src python -m agent_seo.cli score https://agent-url.com --fail-below 60
 ```
 
 ## What It Checks (6 Categories, 100 Points)
