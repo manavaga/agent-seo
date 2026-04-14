@@ -28,10 +28,11 @@ def main():
 @click.option("--format", "output_format", type=click.Choice(["terminal", "json"]), default="terminal")
 @click.option("--save", is_flag=True, help="Save results to results/ directory")
 @click.option("--fail-below", type=int, default=0, help="Exit with code 1 if score below threshold (for CI)")
-def score(url: str, output_format: str, save: bool, fail_below: int):
+@click.option("--skip-mcp", is_flag=True, help="Skip MCP protocol handshake (HTTP checks only)")
+def score(url: str, output_format: str, save: bool, fail_below: int, skip_mcp: bool):
     """Score an agent endpoint on trust & capability metrics."""
-    console.print(f"\n[dim]Scanning {url}...[/dim]\n")
-    result = scan_agent(url)
+    console.print(f"\n[dim]Scanning {url}{'  (skip MCP)' if skip_mcp else ''}...[/dim]\n")
+    result = scan_agent(url, skip_mcp=skip_mcp)
 
     if output_format == "json":
         click.echo(json.dumps(result.to_dict(), indent=2))

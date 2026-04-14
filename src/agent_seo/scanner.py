@@ -1,4 +1,4 @@
-"""HTTP endpoint scanner — checks well-known URLs and scores them."""
+"""HTTP endpoint scanner + MCP protocol handshake — checks endpoints and scores them."""
 from __future__ import annotations
 
 import json
@@ -8,7 +8,9 @@ from urllib.parse import urljoin
 
 import httpx
 
-from .models import Category, Check, ScoreResult
+from .models import Category, Check, MCPInfo, ScoreResult
+from .mcp_client import mcp_handshake
+from .checks.mcp import check_mcp_protocol
 
 TIMEOUT = 10.0
 HEADERS = {"User-Agent": "AgentSEO/0.2 (trust-scoring-cli)"}
@@ -561,8 +563,11 @@ ALL_CHECKERS = [
 ]
 
 
-def scan_agent(url: str) -> ScoreResult:
-    """Scan an agent endpoint and return scoring results."""
+def scan_agent(url: str, skip_mcp: bool = False) -> ScoreResult:
+    """Scan an agent endpoint and return scoring results.
+
+    Performs HTTP endpoint checks + MCP protocol handshake.
+    """
     if not url.startswith("http"):
         url = "https://" + url
     url = url.rstrip("/")
@@ -576,11 +581,28 @@ def scan_agent(url: str) -> ScoreResult:
             return result
         result.latency_ms["base"] = round(base_lat, 1)
 
+        # HTTP endpoint checks
         for checker in ALL_CHECKERS:
             try:
                 cat = checker(client, url)
                 result.categories.append(cat)
             except Exception as e:
                 result.errors.append(f"{checker.__name__}: {e}")
+
+    # MCP protocol handshake (separate from HTTP checks)
+    if not skip_mcp:
+        try:
+            mcp_info = mcp_handshake(url)
+            result.mcp_info = mcp_info
+            mcp_cat = check_mcp_protocol(mcp_info)
+            result.categories.append(mcp_cat)
+            if mcp_info.handshake_latency_ms:
+                result.latency_ms["mcp_handshake"] = round(mcp_info.handshake_latency_ms, 1)
+            if mcp_info.tools_list_latency_ms:
+                result.latency_ms["mcp_tools_list"] = round(mcp_info.tools_list_latency_ms, 1)
+        except Exception as e:
+            result.errors.append(f"MCP handshake: {e}")
+            # Add empty MCP category so max_score stays consistent
+            result.categories.append(Category(name="MCP PROTOCOL", max_points=30))
 
     return result
