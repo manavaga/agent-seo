@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agent-seo"
+version = "0.2.0"
+description = "SEO for Agents — Score any AI agent endpoint on trust & capability metrics"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Manav Agarwal" },
+]
+keywords = ["ai", "agents", "mcp", "a2a", "trust", "scoring", "seo"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = [
+    "httpx>=0.27.0",
+    "click>=8.1.0",
+    "rich>=13.0.0",
+]
+
+[project.scripts]
+agent-seo = "agent_seo.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/manavaga/agent-seo"
+Repository = "https://github.com/manavaga/agent-seo"
+Issues = "https://github.com/manavaga/agent-seo/issues"
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-httpx", "ruff", "mypy"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agent_seo"]
