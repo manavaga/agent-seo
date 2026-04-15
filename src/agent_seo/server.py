@@ -97,10 +97,11 @@ async def mcp_endpoint(request: Request):
                     },
                     "required": ["url"],
                 },
+                "annotations": {"readOnlyHint": True, "destructiveHint": False, "openWorldHint": True},
             },
             {
                 "name": "compare_agents",
-                "description": "Compare two AI agents side by side on trust metrics.",
+                "description": "Compare two AI agents side by side on trust metrics. Scores both and shows category-level differences.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
@@ -109,10 +110,11 @@ async def mcp_endpoint(request: Request):
                     },
                     "required": ["url_a", "url_b"],
                 },
+                "annotations": {"readOnlyHint": True, "destructiveHint": False, "openWorldHint": True},
             },
             {
                 "name": "get_fix_recommendations",
-                "description": "Get prioritized fix recommendations for an AI agent.",
+                "description": "Get prioritized fix recommendations for an AI agent with expected point gains and code templates.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
@@ -120,6 +122,7 @@ async def mcp_endpoint(request: Request):
                     },
                     "required": ["url"],
                 },
+                "annotations": {"readOnlyHint": True, "destructiveHint": False, "openWorldHint": True},
             },
         ]
         return JSONResponse({
@@ -225,7 +228,9 @@ async def agent_card():
         "provider": {
             "name": "Manav Agarwal",
             "url": "https://github.com/manavaga",
+            "repository": "https://github.com/manavaga/agent-seo",
         },
+        "repository": "https://github.com/manavaga/agent-seo",
         "capabilities": [
             {
                 "name": "score_agent",
