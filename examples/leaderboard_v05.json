@@ -1,0 +1,782 @@
+[
+  {
+    "name": "GitMCP React",
+    "url": "https://gitmcp.io/facebook/react",
+    "score": 76,
+    "max": 100,
+    "grade": "B",
+    "pct": 76.0,
+    "tools": 4,
+    "mcp_connected": true,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 24,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 14,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 16,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 10,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 12,
+        "max": 15
+      }
+    },
+    "top_fix": "Add GET /performance with success rates, accuracy, and latency metrics",
+    "top_3_fixes": [
+      "Add GET /performance with success rates, accuracy, and latency metrics",
+      "Keep your repo active \u2014 regular commits signal maintenance",
+      "Add GET /health returning {status, uptime, components}"
+    ],
+    "time": 12.6
+  },
+  {
+    "name": "GitMCP Next.js",
+    "url": "https://gitmcp.io/vercel/next.js",
+    "score": 76,
+    "max": 100,
+    "grade": "B",
+    "pct": 76.0,
+    "tools": 4,
+    "mcp_connected": true,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 24,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 14,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 16,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 10,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 12,
+        "max": 15
+      }
+    },
+    "top_fix": "Add GET /performance with success rates, accuracy, and latency metrics",
+    "top_3_fixes": [
+      "Add GET /performance with success rates, accuracy, and latency metrics",
+      "Keep your repo active \u2014 regular commits signal maintenance",
+      "Add GET /health returning {status, uptime, components}"
+    ],
+    "time": 12.3
+  },
+  {
+    "name": "GitMCP Tailwind",
+    "url": "https://gitmcp.io/tailwindlabs/tailwindcss",
+    "score": 76,
+    "max": 100,
+    "grade": "B",
+    "pct": 76.0,
+    "tools": 4,
+    "mcp_connected": true,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 24,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 14,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 16,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 10,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 12,
+        "max": 15
+      }
+    },
+    "top_fix": "Add GET /performance with success rates, accuracy, and latency metrics",
+    "top_3_fixes": [
+      "Add GET /performance with success rates, accuracy, and latency metrics",
+      "Keep your repo active \u2014 regular commits signal maintenance",
+      "Add GET /health returning {status, uptime, components}"
+    ],
+    "time": 12.2
+  },
+  {
+    "name": "GitMCP LangChain",
+    "url": "https://gitmcp.io/langchain-ai/langchain",
+    "score": 76,
+    "max": 100,
+    "grade": "B",
+    "pct": 76.0,
+    "tools": 4,
+    "mcp_connected": true,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 24,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 14,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 16,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 10,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 12,
+        "max": 15
+      }
+    },
+    "top_fix": "Add GET /performance with success rates, accuracy, and latency metrics",
+    "top_3_fixes": [
+      "Add GET /performance with success rates, accuracy, and latency metrics",
+      "Keep your repo active \u2014 regular commits signal maintenance",
+      "Add GET /health returning {status, uptime, components}"
+    ],
+    "time": 12.2
+  },
+  {
+    "name": "GitMCP Supabase",
+    "url": "https://gitmcp.io/supabase/supabase",
+    "score": 76,
+    "max": 100,
+    "grade": "B",
+    "pct": 76.0,
+    "tools": 4,
+    "mcp_connected": true,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 24,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 14,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 16,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 10,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 12,
+        "max": 15
+      }
+    },
+    "top_fix": "Add GET /performance with success rates, accuracy, and latency metrics",
+    "top_3_fixes": [
+      "Add GET /performance with success rates, accuracy, and latency metrics",
+      "Keep your repo active \u2014 regular commits signal maintenance",
+      "Add GET /health returning {status, uptime, components}"
+    ],
+    "time": 12.2
+  },
+  {
+    "name": "GitMCP Anthropic SDK",
+    "url": "https://gitmcp.io/anthropics/anthropic-sdk-python",
+    "score": 76,
+    "max": 100,
+    "grade": "B",
+    "pct": 76.0,
+    "tools": 4,
+    "mcp_connected": true,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 24,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 14,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 16,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 10,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 12,
+        "max": 15
+      }
+    },
+    "top_fix": "Add GET /performance with success rates, accuracy, and latency metrics",
+    "top_3_fixes": [
+      "Add GET /performance with success rates, accuracy, and latency metrics",
+      "Keep your repo active \u2014 regular commits signal maintenance",
+      "Add GET /health returning {status, uptime, components}"
+    ],
+    "time": 14.0
+  },
+  {
+    "name": "GitMCP HuggingFace",
+    "url": "https://gitmcp.io/huggingface/transformers",
+    "score": 76,
+    "max": 100,
+    "grade": "B",
+    "pct": 76.0,
+    "tools": 4,
+    "mcp_connected": true,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 24,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 14,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 16,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 10,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 12,
+        "max": 15
+      }
+    },
+    "top_fix": "Add GET /performance with success rates, accuracy, and latency metrics",
+    "top_3_fixes": [
+      "Add GET /performance with success rates, accuracy, and latency metrics",
+      "Keep your repo active \u2014 regular commits signal maintenance",
+      "Add GET /health returning {status, uptime, components}"
+    ],
+    "time": 13.7
+  },
+  {
+    "name": "GitMCP Django",
+    "url": "https://gitmcp.io/django/django",
+    "score": 76,
+    "max": 100,
+    "grade": "B",
+    "pct": 76.0,
+    "tools": 4,
+    "mcp_connected": true,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 24,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 14,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 16,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 10,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 12,
+        "max": 15
+      }
+    },
+    "top_fix": "Add GET /performance with success rates, accuracy, and latency metrics",
+    "top_3_fixes": [
+      "Add GET /performance with success rates, accuracy, and latency metrics",
+      "Keep your repo active \u2014 regular commits signal maintenance",
+      "Add GET /health returning {status, uptime, components}"
+    ],
+    "time": 13.9
+  },
+  {
+    "name": "GitMCP Flask",
+    "url": "https://gitmcp.io/pallets/flask",
+    "score": 76,
+    "max": 100,
+    "grade": "B",
+    "pct": 76.0,
+    "tools": 4,
+    "mcp_connected": true,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 24,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 14,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 16,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 10,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 12,
+        "max": 15
+      }
+    },
+    "top_fix": "Add GET /performance with success rates, accuracy, and latency metrics",
+    "top_3_fixes": [
+      "Add GET /performance with success rates, accuracy, and latency metrics",
+      "Keep your repo active \u2014 regular commits signal maintenance",
+      "Add GET /health returning {status, uptime, components}"
+    ],
+    "time": 12.3
+  },
+  {
+    "name": "GitMCP MCP Spec",
+    "url": "https://gitmcp.io/modelcontextprotocol/specification",
+    "score": 75,
+    "max": 100,
+    "grade": "B",
+    "pct": 75.0,
+    "tools": 4,
+    "mcp_connected": true,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 24,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 13,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 16,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 10,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 12,
+        "max": 15
+      }
+    },
+    "top_fix": "Add GET /performance with success rates, accuracy, and latency metrics",
+    "top_3_fixes": [
+      "Add GET /performance with success rates, accuracy, and latency metrics",
+      "Keep your repo active \u2014 regular commits signal maintenance",
+      "Reduce cold start time \u2014 consider keep-alive or warm-up"
+    ],
+    "time": 14.8
+  },
+  {
+    "name": "GitMCP FastAPI",
+    "url": "https://gitmcp.io/fastapi/fastapi",
+    "score": 75,
+    "max": 100,
+    "grade": "B",
+    "pct": 75.0,
+    "tools": 4,
+    "mcp_connected": true,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 24,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 13,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 16,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 10,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 12,
+        "max": 15
+      }
+    },
+    "top_fix": "Add GET /performance with success rates, accuracy, and latency metrics",
+    "top_3_fixes": [
+      "Add GET /performance with success rates, accuracy, and latency metrics",
+      "Keep your repo active \u2014 regular commits signal maintenance",
+      "Reduce cold start time \u2014 consider keep-alive or warm-up"
+    ],
+    "time": 15.1
+  },
+  {
+    "name": "GitMCP Prisma",
+    "url": "https://gitmcp.io/prisma/prisma",
+    "score": 75,
+    "max": 100,
+    "grade": "B",
+    "pct": 75.0,
+    "tools": 4,
+    "mcp_connected": true,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 24,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 13,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 16,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 10,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 12,
+        "max": 15
+      }
+    },
+    "top_fix": "Add GET /performance with success rates, accuracy, and latency metrics",
+    "top_3_fixes": [
+      "Add GET /performance with success rates, accuracy, and latency metrics",
+      "Keep your repo active \u2014 regular commits signal maintenance",
+      "Reduce cold start time \u2014 consider keep-alive or warm-up"
+    ],
+    "time": 16.5
+  },
+  {
+    "name": "AWS Knowledge",
+    "url": "https://knowledge-mcp.global.api.aws",
+    "score": 74,
+    "max": 100,
+    "grade": "B",
+    "pct": 74.0,
+    "tools": 6,
+    "mcp_connected": true,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 19,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 14,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 16,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 10,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 15,
+        "max": 15
+      }
+    },
+    "top_fix": "Add GET /performance with success rates, accuracy, and latency metrics",
+    "top_3_fixes": [
+      "Add GET /performance with success rates, accuracy, and latency metrics",
+      "Add annotations: {\"readOnlyHint\": true} or {\"destructiveHint\": true} to classify tool safety",
+      "Add GET /health returning {status, uptime, components}"
+    ],
+    "time": 7.1
+  },
+  {
+    "name": "Context7",
+    "url": "https://mcp.context7.com",
+    "score": 73,
+    "max": 100,
+    "grade": "B",
+    "pct": 73.0,
+    "tools": 2,
+    "mcp_connected": true,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 23,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 15,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 8,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 12,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 15,
+        "max": 15
+      }
+    },
+    "top_fix": "Add GET /performance with success rates, accuracy, and latency metrics",
+    "top_3_fixes": [
+      "Add GET /performance with success rates, accuracy, and latency metrics",
+      "Add /docs (Swagger UI) or /openapi.json",
+      "Add GET /health returning {status, uptime, components}"
+    ],
+    "time": 9.1
+  },
+  {
+    "name": "DeepWiki",
+    "url": "https://mcp.deepwiki.com",
+    "score": 64,
+    "max": 100,
+    "grade": "C",
+    "pct": 64.0,
+    "tools": 3,
+    "mcp_connected": true,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 14,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 15,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 8,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 12,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 15,
+        "max": 15
+      }
+    },
+    "top_fix": "Add GET /performance with success rates, accuracy, and latency metrics",
+    "top_3_fixes": [
+      "Add GET /performance with success rates, accuracy, and latency metrics",
+      "Add description field to every property in your tool's inputSchema",
+      "Add annotations: {\"readOnlyHint\": true} or {\"destructiveHint\": true} to classify tool safety"
+    ],
+    "time": 8.8
+  },
+  {
+    "name": "Jina AI",
+    "url": "https://mcp.jina.ai",
+    "score": 62,
+    "max": 100,
+    "grade": "C",
+    "pct": 62.0,
+    "tools": 21,
+    "mcp_connected": true,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 19,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 15,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 8,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 8,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 12,
+        "max": 15
+      }
+    },
+    "top_fix": "Add GET /performance with success rates, accuracy, and latency metrics",
+    "top_3_fixes": [
+      "Add GET /performance with success rates, accuracy, and latency metrics",
+      "Add annotations: {\"readOnlyHint\": true} or {\"destructiveHint\": true} to classify tool safety",
+      "Add /docs (Swagger UI) or /openapi.json"
+    ],
+    "time": 1.4
+  },
+  {
+    "name": "CoinGecko",
+    "url": "https://mcp.api.coingecko.com",
+    "score": 51,
+    "max": 100,
+    "grade": "C",
+    "pct": 51.0,
+    "tools": 50,
+    "mcp_connected": true,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 23,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 14,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 6,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 4,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 4,
+        "max": 15
+      }
+    },
+    "top_fix": "Add GET /performance with success rates, accuracy, and latency metrics",
+    "top_3_fixes": [
+      "Add GET /performance with success rates, accuracy, and latency metrics",
+      "Add /docs (Swagger UI) or /openapi.json",
+      "Keep your repo active \u2014 regular commits signal maintenance"
+    ],
+    "time": 4.7
+  },
+  {
+    "name": "GitMCP Express",
+    "url": "https://gitmcp.io/expressjs/express",
+    "score": 51,
+    "max": 100,
+    "grade": "C",
+    "pct": 51.0,
+    "tools": 4,
+    "mcp_connected": true,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 24,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 14,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 8,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 5,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 0,
+        "max": 15
+      }
+    },
+    "top_fix": "Link your GitHub repo in your agent card or health endpoint",
+    "top_3_fixes": [
+      "Link your GitHub repo in your agent card or health endpoint",
+      "Add GET /performance with success rates, accuracy, and latency metrics",
+      "Link your GitHub repo for maintenance scoring"
+    ],
+    "time": 12.4
+  },
+  {
+    "name": "GitMCP Vue.js",
+    "url": "https://gitmcp.io/vuejs/core",
+    "score": 51,
+    "max": 100,
+    "grade": "C",
+    "pct": 51.0,
+    "tools": 4,
+    "mcp_connected": true,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 24,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 14,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 8,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 5,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 0,
+        "max": 15
+      }
+    },
+    "top_fix": "Link your GitHub repo in your agent card or health endpoint",
+    "top_3_fixes": [
+      "Link your GitHub repo in your agent card or health endpoint",
+      "Add GET /performance with success rates, accuracy, and latency metrics",
+      "Link your GitHub repo for maintenance scoring"
+    ],
+    "time": 12.5
+  },
+  {
+    "name": "Semgrep",
+    "url": "https://mcp.semgrep.ai",
+    "score": 33,
+    "max": 100,
+    "grade": "D",
+    "pct": 33.0,
+    "tools": 0,
+    "mcp_connected": false,
+    "categories": {
+      "SCHEMA & INTERFACE QUALITY": {
+        "score": 0,
+        "max": 25
+      },
+      "FUNCTIONAL RELIABILITY": {
+        "score": 4,
+        "max": 25
+      },
+      "DEVELOPER EXPERIENCE": {
+        "score": 8,
+        "max": 20
+      },
+      "ECOSYSTEM SIGNAL": {
+        "score": 8,
+        "max": 15
+      },
+      "MAINTENANCE HEALTH": {
+        "score": 13,
+        "max": 15
+      }
+    },
+    "top_fix": "Ensure MCP endpoint is accessible via SSE (/mcp/sse) or Streamable HTTP (/mcp/stream)",
+    "top_3_fixes": [
+      "Ensure MCP endpoint is accessible via SSE (/mcp/sse) or Streamable HTTP (/mcp/stream)",
+      "Expose capabilities via MCP or A2A Agent Card",
+      "Add GET /performance with success rates, accuracy, and latency metrics"
+    ],
+    "time": 12.8
+  }
+]
