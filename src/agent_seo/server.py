@@ -49,6 +49,73 @@ app = FastAPI(
 
 
 # ---------------------------------------------------------------------------
+# Startup: Initialize database
+# ---------------------------------------------------------------------------
+
+@app.on_event("startup")
+def startup_init_db():
+    """Initialize SQLite database on startup."""
+    try:
+        from .db import init_db
+        init_db()
+    except Exception:
+        pass  # DB is optional — core scoring works without it
+
+
+# ---------------------------------------------------------------------------
+# Leaderboard API endpoints
+# ---------------------------------------------------------------------------
+
+@app.get("/leaderboard")
+async def leaderboard_endpoint(
+    page: int = 1,
+    per_page: int = 50,
+    min_score: int | None = None,
+    grade: str | None = None,
+    sort_by: str = "total_score",
+    sort_dir: str = "desc",
+):
+    """Paginated agent leaderboard with filters."""
+    try:
+        from .db import query_leaderboard
+        return query_leaderboard(
+            page=page, per_page=per_page,
+            min_score=min_score, grade=grade,
+            sort_by=sort_by, sort_dir=sort_dir,
+        )
+    except Exception as e:
+        return JSONResponse(
+            {"error": f"Leaderboard not available: {e}", "hint": "Run 'agent-seo discover && agent-seo rescore' first"},
+            status_code=503,
+        )
+
+
+@app.get("/leaderboard/{url:path}")
+async def leaderboard_detail_endpoint(url: str):
+    """Single agent detail with score history and changes."""
+    try:
+        from .db import get_leaderboard_entry
+        result = get_leaderboard_entry(url)
+        if not result:
+            return JSONResponse({"error": f"Agent not found: {url}"}, status_code=404)
+        return result
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=503)
+
+
+@app.get("/trends")
+async def trends_endpoint():
+    """Ecosystem-wide trends: avg score, grade distribution, feature adoption."""
+    try:
+        from .db import get_ecosystem_trends, compute_ecosystem_stats
+        current = compute_ecosystem_stats()
+        history = get_ecosystem_trends(limit=30)
+        return {"current": current, "history": history}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=503)
+
+
+# ---------------------------------------------------------------------------
 # MCP Streamable HTTP endpoint
 # ---------------------------------------------------------------------------
 
@@ -142,6 +209,50 @@ async def mcp_endpoint(request: Request):
                 },
                 "annotations": {"readOnlyHint": True, "destructiveHint": False, "openWorldHint": True},
             },
+            {
+                "name": "get_leaderboard",
+                "description": (
+                    "Browse the agent leaderboard — 2000+ MCP servers scored and ranked. "
+                    "Filter by grade, minimum score, or sort by stars. "
+                    "See which agents are the most trustworthy in the ecosystem."
+                ),
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "page": {"type": "integer", "description": "Page number (default 1)", "default": 1},
+                        "per_page": {"type": "integer", "description": "Results per page (default 20, max 50)", "default": 20},
+                        "grade": {"type": "string", "description": "Filter by grade: A, B, C, D, or F"},
+                        "min_score": {"type": "integer", "description": "Minimum score to include"},
+                        "sort_by": {"type": "string", "description": "Sort field: total_score, github_stars, name", "default": "total_score"},
+                    },
+                },
+                "annotations": {"readOnlyHint": True, "destructiveHint": False, "openWorldHint": False},
+            },
+            {
+                "name": "get_agent_detail",
+                "description": (
+                    "Get full scoring detail for a specific agent — current score, category breakdown, "
+                    "strengths, improvements, score history over time, and material changes."
+                ),
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "url": {"type": "string", "description": "The agent URL to look up"},
+                    },
+                    "required": ["url"],
+                },
+                "annotations": {"readOnlyHint": True, "destructiveHint": False, "openWorldHint": False},
+            },
+            {
+                "name": "get_ecosystem_trends",
+                "description": (
+                    "How is the MCP ecosystem evolving? Get average scores, grade distribution, "
+                    "feature adoption rates (agent.json, health endpoints, MCP connected), "
+                    "and trends over time across 2000+ scored agents."
+                ),
+                "inputSchema": {"type": "object", "properties": {}},
+                "annotations": {"readOnlyHint": True, "destructiveHint": False, "openWorldHint": False},
+            },
         ]
         return JSONResponse({
             "jsonrpc": "2.0",
@@ -176,6 +287,30 @@ async def mcp_endpoint(request: Request):
                 result = scan_agent_v2(args["url"], skip_mcp=False)
                 d = result.to_dict()
                 text = _format_fixes_text(d)
+            elif tool_name == "get_leaderboard":
+                from .db import query_leaderboard
+                lb = query_leaderboard(
+                    page=args.get("page", 1),
+                    per_page=min(args.get("per_page", 20), 50),
+                    min_score=args.get("min_score"),
+                    grade=args.get("grade"),
+                    sort_by=args.get("sort_by", "total_score"),
+                )
+                text = _format_leaderboard_text(lb)
+
+            elif tool_name == "get_agent_detail":
+                from .db import get_leaderboard_entry
+                entry = get_leaderboard_entry(args["url"])
+                if entry:
+                    text = _format_agent_detail_text(entry)
+                else:
+                    text = f"Agent not found: {args['url']}"
+
+            elif tool_name == "get_ecosystem_trends":
+                from .db import compute_ecosystem_stats, get_ecosystem_trends
+                current = compute_ecosystem_stats()
+                text = _format_trends_text(current)
+
             else:
                 text = f"Unknown tool: {tool_name}"
 
@@ -428,6 +563,73 @@ def _format_fixes_text(d: dict) -> str:
         if f.get("url"):
             output += f"   Spec: {f['url']}\n"
         output += "\n"
+    return output
+
+
+def _format_leaderboard_text(lb: dict) -> str:
+    agents = lb.get("agents", [])
+    if not agents:
+        return "No scored agents found. The leaderboard is empty — run discovery and scoring first."
+    output = f"## Agent Leaderboard (Page {lb['page']}/{lb['total_pages']}, {lb['total']} total)\n\n"
+    output += "| # | Agent | Score | Grade | MCP | Stars |\n|---|---|---|---|---|---|\n"
+    for a in agents:
+        name = a.get("name") or a["url"]
+        if len(name) > 30:
+            name = name[:27] + "..."
+        mcp = "✓" if a.get("mcp_connected") else "✗"
+        stars = f"{a['github_stars']:,}" if a.get("github_stars") else "—"
+        delta = ""
+        if a.get("score_delta") is not None:
+            d = a["score_delta"]
+            delta = f" (+{d})" if d > 0 else (f" ({d})" if d < 0 else "")
+        output += f"| {a['rank']} | {name} | {a['total_score']}/{a['max_score']}{delta} | {a['grade']} | {mcp} | {stars} |\n"
+    return output
+
+
+def _format_agent_detail_text(entry: dict) -> str:
+    agent = entry.get("agent", {})
+    score = entry.get("current_score")
+    if not score:
+        return f"No score data for {agent.get('url', '?')}"
+    output = f"## {agent.get('name') or agent['url']}\n"
+    output += f"**URL:** {agent['url']}\n"
+    output += f"**Score:** {score['total_score']}/{score['max_score']} (Grade {score['grade']})\n\n"
+    # Category breakdown
+    for name, cat in score.get("category_scores", {}).items():
+        output += f"- **{name}**: {cat['score']}/{cat['max']}\n"
+    # Strengths
+    strengths = score.get("strengths", [])
+    if strengths:
+        output += "\n### Strengths\n"
+        for s in strengths[:5]:
+            output += f"- {s}\n"
+    # Improvements
+    improvements = score.get("improvements", [])
+    if improvements:
+        output += "\n### Improvements\n"
+        for imp in improvements[:5]:
+            output += f"- {imp}\n"
+    # History
+    history = entry.get("history", [])
+    if len(history) > 1:
+        output += "\n### Score History\n"
+        for h in history[:5]:
+            output += f"- {h['scored_at'][:10]}: {h['total_score']}/{h['max_score']} ({h['grade']})\n"
+    return output
+
+
+def _format_trends_text(stats: dict) -> str:
+    output = "## MCP Ecosystem Trends\n\n"
+    output += f"**Agents scored:** {stats.get('scored_count', 0)}\n"
+    output += f"**Average score:** {stats.get('avg_score', 0)}\n"
+    output += f"**Median score:** {stats.get('median_score', 0)}\n"
+    output += f"**MCP connected:** {stats.get('pct_mcp_connected', 0)}%\n\n"
+    grade_dist = stats.get("grade_distribution", {})
+    if grade_dist:
+        output += "### Grade Distribution\n"
+        for g in ["A", "B", "C", "D", "F"]:
+            count = grade_dist.get(g, 0)
+            output += f"- **{g}**: {count} agents\n"
     return output
 
 
