@@ -18,6 +18,46 @@ agent-seo score https://your-agent-url.com
 agent-seo score https://your-agent-url.com --skip-mcp
 ```
 
+## Use as MCP Server (Claude, Cursor, ChatGPT)
+
+Add agent-seo to your MCP config so AI assistants can score agents inline:
+
+**Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "agent-seo": {
+      "command": "python",
+      "args": ["-m", "agent_seo.mcp_server"],
+      "cwd": "/path/to/agent-seo"
+    }
+  }
+}
+```
+
+**Cursor** (`.cursor/mcp.json`):
+```json
+{
+  "mcpServers": {
+    "agent-seo": {
+      "command": "python",
+      "args": ["-m", "agent_seo.mcp_server"],
+      "cwd": "/path/to/agent-seo"
+    }
+  }
+}
+```
+
+Then ask your AI assistant: *"Score the agent at https://mcp.context7.com"* — it will call agent-seo and return the full trust score with fix recommendations.
+
+### Available MCP Tools
+
+| Tool | What It Does |
+|---|---|
+| `score_agent` | Score any agent URL — returns score, grade, category breakdown, fix recommendations |
+| `compare_agents` | Compare two agents side by side — shows which is stronger in each category |
+| `get_fix_recommendations` | Get prioritized fixes with expected point gains and code templates |
+
 ## Real Scores (v0.5)
 
 | Agent | Score | Grade | Tools | What It Does |
@@ -118,9 +158,10 @@ agent-seo score URL --skip-mcp
 - [x] v0.3 — MCP protocol handshake (SSE + Streamable HTTP)
 - [x] v0.4 — Adaptive scoring engine (5 categories)
 - [x] v0.5 — Foolproof scoring (8-path MCP discovery, GitHub intelligence, brand detection)
-- [ ] v0.6 — Trust score badge for READMEs
-- [ ] v0.7 — PyPI publish (`pip install agent-seo`)
-- [ ] v0.8 — GitHub Action for CI/CD
+- [x] v0.6 — MCP Server (use agent-seo from Claude, Cursor, ChatGPT)
+- [ ] v0.7 — Trust score badge for READMEs
+- [ ] v0.8 — PyPI publish (`pip install agent-seo`)
+- [ ] v0.9 — GitHub Action for CI/CD
 - [ ] v1.0 — Protocol spec (SPEC.md)
 
 ## Contributing

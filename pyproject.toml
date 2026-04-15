@@ -24,10 +24,12 @@ dependencies = [
     "httpx>=0.27.0",
     "click>=8.1.0",
     "rich>=13.0.0",
+    "mcp>=1.26.0",
 ]
 
 [project.scripts]
 agent-seo = "agent_seo.cli:main"
+agent-seo-mcp = "agent_seo.mcp_server:main"
 
 [project.urls]
 Homepage = "https://github.com/manavaga/agent-seo"
