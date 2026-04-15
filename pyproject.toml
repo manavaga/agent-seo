@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "agent-seo"
-version = "0.2.0"
+version = "0.4.0"
 description = "SEO for Agents — Score any AI agent endpoint on trust & capability metrics"
 readme = "README.md"
 license = "MIT"

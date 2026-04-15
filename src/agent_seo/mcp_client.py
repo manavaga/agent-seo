@@ -15,7 +15,7 @@ import httpx
 from .models import MCPInfo
 
 TIMEOUT = 30.0
-HEADERS = {"User-Agent": "AgentSEO/0.2 (mcp-handshake)"}
+HEADERS = {"User-Agent": "AgentSEO/0.4 (mcp-handshake)"}
 
 
 def _jsonrpc_request(method: str, params: Optional[dict] = None, id: Optional[str] = None) -> dict:

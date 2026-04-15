@@ -1,0 +1,257 @@
+
+Scanning https://gitmcp.io/facebook/react  (skip MCP)...
+
+{
+  "agent_seo_version": "0.4",
+  "url": "https://gitmcp.io/facebook/react",
+  "timestamp": "2026-04-15T03:16:12.812122+00:00",
+  "total_score": 38,
+  "max_score": 100,
+  "grade": "D",
+  "percentage": 38.0,
+  "categories": [
+    {
+      "name": "SCHEMA & INTERFACE QUALITY",
+      "score": 0,
+      "max_points": 25,
+      "checks": [
+        {
+          "name": "Capabilities declared (via A2A card)",
+          "passed": false,
+          "points": 0,
+          "max_points": 3,
+          "detail": "No Agent Card or capabilities",
+          "fix_hint": "Serve /.well-known/agent.json with a capabilities array",
+          "fix_url": ""
+        },
+        {
+          "name": "Capability descriptions quality",
+          "passed": false,
+          "points": 0,
+          "max_points": 7,
+          "detail": "No capabilities found to evaluate",
+          "fix_hint": "Expose capabilities via MCP or A2A Agent Card",
+          "fix_url": ""
+        },
+        {
+          "name": "Input schemas defined",
+          "passed": false,
+          "points": 0,
+          "max_points": 5,
+          "detail": "No capabilities found to evaluate",
+          "fix_hint": "Expose capabilities via MCP or A2A Agent Card",
+          "fix_url": ""
+        },
+        {
+          "name": "Rich metadata",
+          "passed": false,
+          "points": 0,
+          "max_points": 5,
+          "detail": "No capabilities found to evaluate",
+          "fix_hint": "Expose capabilities via MCP or A2A Agent Card",
+          "fix_url": ""
+        },
+        {
+          "name": "Safety annotations",
+          "passed": false,
+          "points": 0,
+          "max_points": 5,
+          "detail": "No capabilities found to evaluate",
+          "fix_hint": "Expose capabilities via MCP or A2A Agent Card",
+          "fix_url": ""
+        }
+      ]
+    },
+    {
+      "name": "FUNCTIONAL RELIABILITY",
+      "score": 0,
+      "max_points": 25,
+      "checks": [
+        {
+          "name": "MCP handshake",
+          "passed": false,
+          "points": 0,
+          "max_points": 8,
+          "detail": "MCP not tested (use --mcp to enable)",
+          "fix_hint": "",
+          "fix_url": ""
+        },
+        {
+          "name": "Health endpoint",
+          "passed": false,
+          "points": 0,
+          "max_points": 4,
+          "detail": "Not found",
+          "fix_hint": "Add GET /health returning {status, uptime, components}",
+          "fix_url": ""
+        },
+        {
+          "name": "Performance metrics endpoint",
+          "passed": false,
+          "points": 0,
+          "max_points": 6,
+          "detail": "No /performance endpoint",
+          "fix_hint": "Add GET /performance with success rates, accuracy, and latency metrics",
+          "fix_url": ""
+        }
+      ]
+    },
+    {
+      "name": "DEVELOPER EXPERIENCE",
+      "score": 16,
+      "max_points": 20,
+      "checks": [
+        {
+          "name": "API documentation (/docs or OpenAPI)",
+          "passed": true,
+          "points": 5,
+          "max_points": 5,
+          "detail": "Available",
+          "fix_hint": "",
+          "fix_url": ""
+        },
+        {
+          "name": "LLM-readable description (llms.txt)",
+          "passed": true,
+          "points": 3,
+          "max_points": 3,
+          "detail": "Found",
+          "fix_hint": "",
+          "fix_url": ""
+        },
+        {
+          "name": "Discovery endpoints (A2A card, MCP discovery)",
+          "passed": false,
+          "points": 0,
+          "max_points": 4,
+          "detail": "0 discovery endpoint(s) found",
+          "fix_hint": "Serve /.well-known/agent.json (A2A) and/or /.well-known/mcp.json (MCP)",
+          "fix_url": ""
+        },
+        {
+          "name": "GitHub repo quality (description, topics, license)",
+          "passed": true,
+          "points": 8,
+          "max_points": 8,
+          "detail": "Description: \u2713, Topics: \u2713, License: Apache-2.0",
+          "fix_hint": "",
+          "fix_url": ""
+        }
+      ]
+    },
+    {
+      "name": "ECOSYSTEM SIGNAL",
+      "score": 10,
+      "max_points": 15,
+      "checks": [
+        {
+          "name": "GitHub stars",
+          "passed": true,
+          "points": 5,
+          "max_points": 7,
+          "detail": "7,917 stars",
+          "fix_hint": "",
+          "fix_url": ""
+        },
+        {
+          "name": "Community engagement (forks)",
+          "passed": false,
+          "points": 1,
+          "max_points": 4,
+          "detail": "703 forks",
+          "fix_hint": "",
+          "fix_url": ""
+        },
+        {
+          "name": "Discoverable topics (MCP, agent, AI tags)",
+          "passed": true,
+          "points": 4,
+          "max_points": 4,
+          "detail": "Topics: agentic-ai, agents, ai, claude, copilot",
+          "fix_hint": "",
+          "fix_url": ""
+        }
+      ]
+    },
+    {
+      "name": "MAINTENANCE HEALTH",
+      "score": 12,
+      "max_points": 15,
+      "checks": [
+        {
+          "name": "Recent activity",
+          "passed": false,
+          "points": 2,
+          "max_points": 5,
+          "detail": "Last push: 33 days ago",
+          "fix_hint": "Keep your repo active \u2014 regular commits signal maintenance",
+          "fix_url": ""
+        },
+        {
+          "name": "Project is active (not archived)",
+          "passed": true,
+          "points": 3,
+          "max_points": 3,
+          "detail": "Active",
+          "fix_hint": "",
+          "fix_url": ""
+        },
+        {
+          "name": "License",
+          "passed": true,
+          "points": 3,
+          "max_points": 3,
+          "detail": "Apache-2.0",
+          "fix_hint": "",
+          "fix_url": ""
+        },
+        {
+          "name": "Issue health (open issues vs stars ratio)",
+          "passed": true,
+          "points": 4,
+          "max_points": 4,
+          "detail": "66 open issues (0.8% of stars)",
+          "fix_hint": "",
+          "fix_url": ""
+        }
+      ]
+    }
+  ],
+  "top_fixes": [
+    {
+      "name": "Capability descriptions quality",
+      "impact": 7,
+      "fix": "Expose capabilities via MCP or A2A Agent Card",
+      "url": ""
+    },
+    {
+      "name": "Performance metrics endpoint",
+      "impact": 6,
+      "fix": "Add GET /performance with success rates, accuracy, and latency metrics",
+      "url": ""
+    },
+    {
+      "name": "Input schemas defined",
+      "impact": 5,
+      "fix": "Expose capabilities via MCP or A2A Agent Card",
+      "url": ""
+    },
+    {
+      "name": "Rich metadata",
+      "impact": 5,
+      "fix": "Expose capabilities via MCP or A2A Agent Card",
+      "url": ""
+    },
+    {
+      "name": "Safety annotations",
+      "impact": 5,
+      "fix": "Expose capabilities via MCP or A2A Agent Card",
+      "url": ""
+    }
+  ],
+  "mcp": null,
+  "latency_ms": {
+    "base": 159.8
+  },
+  "errors": []
+}
