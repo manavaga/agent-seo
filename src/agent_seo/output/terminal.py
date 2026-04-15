@@ -40,7 +40,7 @@ def render(result: ScoreResult) -> None:
         f"[dim]Confidence:[/dim] [{conf_color}]{confidence}[/{conf_color}] "
         f"[dim]({num_cats} of 5 dimensions assessed)[/dim]\n\n"
         f"[dim]{result.url}[/dim]",
-        title="[bold cyan]agent-seo v0.4[/bold cyan]",
+        title="[bold cyan]agent-seo v0.5[/bold cyan]",
         border_style="cyan",
     ))
 

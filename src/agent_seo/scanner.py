@@ -7,11 +7,13 @@ Categories:
 4. Ecosystem Signal (15%) — stars, downloads, adoption
 5. Maintenance Health (15%) — commits, issues, freshness
 
-Missing categories are excluded from denominator, not scored zero.
+All 5 categories are ALWAYS present in the score. If data is unavailable,
+the category scores 0 with an explanation of what was attempted.
 """
 from __future__ import annotations
 
 import json
+import os
 import re
 import time
 from typing import Any, Optional
@@ -23,7 +25,7 @@ from .models import Category, Check, MCPInfo, ScoreResult
 from .mcp_client import mcp_handshake, analyze_tool_quality
 
 TIMEOUT = 10.0
-HEADERS = {"User-Agent": "AgentSEO/0.4 (trust-scoring-cli)"}
+HEADERS = {"User-Agent": "AgentSEO/0.5 (trust-scoring-cli)"}
 
 
 # ---------------------------------------------------------------------------
@@ -49,53 +51,69 @@ def _get_json(client: httpx.Client, url: str) -> tuple[Optional[dict], float]:
     return None, lat
 
 
-def _extract_github_info(client: httpx.Client, url: str, agent_card: Optional[dict]) -> Optional[dict]:
-    """Try to find and query GitHub repo info for ecosystem/maintenance signals."""
-    github_url = None
+# P0 Fix 3: Known brands — map company domains to GitHub orgs
+KNOWN_BRANDS = {
+    "stripe.com": {"github_org": "stripe", "brand": "Stripe"},
+    "figma.com": {"github_org": "figma", "brand": "Figma"},
+    "sentry.dev": {"github_org": "getsentry", "brand": "Sentry"},
+    "sentry.io": {"github_org": "getsentry", "brand": "Sentry"},
+    "supabase.com": {"github_org": "supabase", "brand": "Supabase"},
+    "coingecko.com": {"github_org": "coingecko", "brand": "CoinGecko"},
+    "semgrep.ai": {"github_org": "semgrep", "brand": "Semgrep"},
+    "deepwiki.com": {"github_org": "deepwiki", "brand": "DeepWiki"},
+    "jina.ai": {"github_org": "jina-ai", "brand": "Jina AI"},
+    "paypal.com": {"github_org": "paypal", "brand": "PayPal"},
+    "webflow.com": {"github_org": "webflow", "brand": "Webflow"},
+    "asana.com": {"github_org": "asana", "brand": "Asana"},
+    "apify.com": {"github_org": "apify", "brand": "Apify"},
+    "composio.dev": {"github_org": "composiohq", "brand": "Composio"},
+    "anthropic.com": {"github_org": "anthropics", "brand": "Anthropic"},
+    "aws.amazon.com": {"github_org": "awslabs", "brand": "AWS"},
+    "api.aws": {"github_org": "awslabs", "brand": "AWS"},
+    "upstash.com": {"github_org": "upstash", "brand": "Upstash"},
+    "context7.com": {"github_org": "upstash", "brand": "Upstash (Context7)"},
+    "gitmcp.io": {"github_org": "nicepkg", "brand": "GitMCP"},
+    "pipedream.com": {"github_org": "pipedreamhq", "brand": "Pipedream"},
+}
 
-    # Check agent card for repo link
-    if agent_card:
-        for key in ["repository", "repo", "source", "github", "source_code"]:
-            val = agent_card.get(key)
-            if val and "github.com" in str(val):
-                github_url = str(val)
-                break
-        # Check provider
-        provider = agent_card.get("provider", {})
-        if isinstance(provider, dict):
-            for key in ["url", "repository"]:
-                val = provider.get(key)
-                if val and "github.com" in str(val):
-                    github_url = str(val)
-                    break
 
-    # Check for GitHub link in common endpoints
-    if not github_url:
-        for path in ["/docs", "/health", "/"]:
-            resp, _ = _get(client, urljoin(url, path))
-            if resp and resp.status_code == 200:
-                text = resp.text[:5000]
-                match = re.search(r'https?://github\.com/[\w-]+/[\w.-]+', text)
-                if match:
-                    github_url = match.group(0)
-                    break
+def _extract_parent_domain(url: str) -> str:
+    """Extract parent domain from URL. E.g., mcp.stripe.com -> stripe.com"""
+    from urllib.parse import urlparse
+    hostname = urlparse(url).hostname or ""
+    parts = hostname.split(".")
+    if len(parts) >= 2:
+        return ".".join(parts[-2:])  # stripe.com
+    return hostname
 
-    if not github_url:
-        return None
 
-    # Extract owner/repo from GitHub URL
-    match = re.match(r'https?://github\.com/([\w-]+)/([\w.-]+)', github_url)
-    if not match:
-        return None
+def _lookup_known_brand(url: str) -> Optional[dict]:
+    """Check if URL belongs to a known brand. Returns brand info or None."""
+    parent = _extract_parent_domain(url)
+    # Check exact match
+    if parent in KNOWN_BRANDS:
+        return KNOWN_BRANDS[parent]
+    # Check subdomains (e.g., mcp.api.coingecko.com -> coingecko.com)
+    from urllib.parse import urlparse
+    hostname = urlparse(url).hostname or ""
+    for domain, info in KNOWN_BRANDS.items():
+        if hostname.endswith(domain) or hostname.endswith("." + domain):
+            return info
+    return None
 
-    owner, repo = match.group(1), match.group(2).rstrip('.git')
 
-    # Query GitHub API (unauthenticated — 60 req/hr limit)
+def _query_github_repo(client: httpx.Client, owner: str, repo: str) -> Optional[dict]:
+    """Query GitHub API for a specific repo. Returns repo info dict or None."""
+    gh_token = os.environ.get("GITHUB_TOKEN", "")
+    gh_headers = {"User-Agent": "AgentSEO/0.5", "Accept": "application/vnd.github.v3+json"}
+    if gh_token:
+        gh_headers["Authorization"] = f"token {gh_token}"
+
     try:
         api_resp = client.get(
             f"https://api.github.com/repos/{owner}/{repo}",
-            headers={"User-Agent": "AgentSEO/0.4", "Accept": "application/vnd.github.v3+json"},
-            timeout=10.0,
+            headers=gh_headers,
+            timeout=8.0,
         )
         if api_resp.status_code == 200:
             data = api_resp.json()
@@ -115,10 +133,112 @@ def _extract_github_info(client: httpx.Client, url: str, agent_card: Optional[di
                 "has_wiki": data.get("has_wiki", False),
                 "archived": data.get("archived", False),
                 "full_name": f"{owner}/{repo}",
-                "url": github_url,
+                "url": f"https://github.com/{owner}/{repo}",
             }
     except Exception:
         pass
+    return None
+
+
+def _search_github_repo(client: httpx.Client, query: str) -> Optional[dict]:
+    """Search GitHub API for a repo by name. Returns top result if >50 stars."""
+    gh_token = os.environ.get("GITHUB_TOKEN", "")
+    gh_headers = {"User-Agent": "AgentSEO/0.5", "Accept": "application/vnd.github.v3+json"}
+    if gh_token:
+        gh_headers["Authorization"] = f"token {gh_token}"
+
+    try:
+        api_resp = client.get(
+            f"https://api.github.com/search/repositories?q={query}+in:name&sort=stars&per_page=1",
+            headers=gh_headers,
+            timeout=8.0,
+        )
+        if api_resp.status_code == 200:
+            results = api_resp.json().get("items", [])
+            if results and results[0].get("stargazers_count", 0) > 50:
+                data = results[0]
+                return _query_github_repo(client, data["owner"]["login"], data["name"])
+    except Exception:
+        pass
+    return None
+
+
+def _extract_github_info(client: httpx.Client, url: str, agent_card: Optional[dict],
+                         mcp_server_name: str = "") -> Optional[dict]:
+    """Try to find and query GitHub repo info using multiple strategies.
+
+    Strategies (in order):
+    1. Direct link in agent card
+    2. Link found in HTTP endpoints (/docs, /health, /)
+    3. Known brand subdomain lookup (mcp.stripe.com -> stripe)
+    4. MCP server name search (serverInfo.name -> GitHub search)
+    5. Domain name search (context7.com -> search "context7")
+    """
+    github_url = None
+
+    # Strategy 1: Check agent card for repo link
+    if agent_card:
+        for key in ["repository", "repo", "source", "github", "source_code"]:
+            val = agent_card.get(key)
+            if val and "github.com" in str(val):
+                github_url = str(val)
+                break
+        if not github_url:
+            provider = agent_card.get("provider", {})
+            if isinstance(provider, dict):
+                for key in ["url", "repository"]:
+                    val = provider.get(key)
+                    if val and "github.com" in str(val):
+                        github_url = str(val)
+                        break
+
+    # Strategy 2: Check HTTP endpoints for GitHub links
+    if not github_url:
+        for path in ["/docs", "/health", "/", "/llms.txt"]:
+            resp, _ = _get(client, urljoin(url, path))
+            if resp and resp.status_code == 200:
+                text = resp.text[:10000]
+                match = re.search(r'https?://github\.com/[\w-]+/[\w.-]+', text)
+                if match:
+                    github_url = match.group(0)
+                    break
+
+    # If we have a direct URL, query it
+    if github_url:
+        match = re.match(r'https?://github\.com/([\w-]+)/([\w.-]+)', github_url)
+        if match:
+            owner, repo = match.group(1), match.group(2).rstrip('.git')
+            result = _query_github_repo(client, owner, repo)
+            if result:
+                return result
+
+    # Strategy 3: Known brand lookup — map domain to GitHub org
+    brand = _lookup_known_brand(url)
+    if brand:
+        github_org = brand["github_org"]
+        # Try common repo name patterns
+        domain_stem = _extract_parent_domain(url).split(".")[0]  # "stripe" from "stripe.com"
+        for repo_guess in [domain_stem, f"{domain_stem}-mcp", f"mcp-server-{domain_stem}", f"mcp"]:
+            result = _query_github_repo(client, github_org, repo_guess)
+            if result and result["stars"] > 10:
+                return result
+
+    # Strategy 4: Search by MCP server name
+    if mcp_server_name and not github_url:
+        # Clean the server name for search
+        search_name = mcp_server_name.lower().replace(" ", "-").replace("_", "-")
+        if len(search_name) >= 3:
+            result = _search_github_repo(client, search_name)
+            if result:
+                return result
+
+    # Strategy 5: Search by domain stem
+    if not github_url:
+        domain_stem = _extract_parent_domain(url).split(".")[0]
+        if len(domain_stem) >= 3 and domain_stem not in ["www", "api", "mcp", "app"]:
+            result = _search_github_repo(client, domain_stem)
+            if result:
+                return result
 
     return None
 
@@ -429,10 +549,41 @@ def check_developer_experience(client: httpx.Client, base_url: str, github_info:
 # Category 4: Ecosystem Signal (15 pts)
 # ---------------------------------------------------------------------------
 
-def check_ecosystem_signal(github_info: Optional[dict]) -> Optional[Category]:
-    """Score adoption and social proof. Returns None if no data available."""
+def check_ecosystem_signal(github_info: Optional[dict], url: str = "") -> Category:
+    """Score adoption and social proof. Always returns a category (never None)."""
     if not github_info:
-        return None  # Excluded from denominator
+        cat = Category(name="ECOSYSTEM SIGNAL", max_points=15)
+        # Check if it's a known brand even without GitHub
+        brand = _lookup_known_brand(url) if url else None
+        if brand:
+            cat.checks.append(Check(
+                name="Known brand recognition",
+                passed=True,
+                points=5,
+                max_points=7,
+                detail=f"Recognized: {brand['brand']} (GitHub repo not found)",
+                fix_hint="Link your GitHub repo in your agent card for full ecosystem scoring",
+            ))
+        else:
+            cat.checks.append(Check(
+                name="GitHub repository",
+                passed=False,
+                points=0,
+                max_points=7,
+                detail="No GitHub repo found (checked agent card, endpoints, domain, server name)",
+                fix_hint="Add a GitHub link to your agent card, health endpoint, or llms.txt",
+            ))
+        cat.checks.append(Check(
+            name="Community engagement",
+            passed=False, points=0, max_points=4,
+            detail="No data available",
+        ))
+        cat.checks.append(Check(
+            name="Discoverable topics",
+            passed=False, points=0, max_points=4,
+            detail="No data available",
+        ))
+        return cat
 
     cat = Category(name="ECOSYSTEM SIGNAL", max_points=15)
 
@@ -485,10 +636,32 @@ def check_ecosystem_signal(github_info: Optional[dict]) -> Optional[Category]:
 # Category 5: Maintenance Health (15 pts)
 # ---------------------------------------------------------------------------
 
-def check_maintenance_health(github_info: Optional[dict]) -> Optional[Category]:
-    """Score maintenance signals. Returns None if no repo data available."""
+def check_maintenance_health(github_info: Optional[dict]) -> Category:
+    """Score maintenance signals. Always returns a category (never None)."""
     if not github_info:
-        return None  # Excluded from denominator
+        cat = Category(name="MAINTENANCE HEALTH", max_points=15)
+        cat.checks.append(Check(
+            name="Recent activity",
+            passed=False, points=0, max_points=5,
+            detail="No GitHub repo found to assess maintenance",
+            fix_hint="Link your GitHub repo for maintenance scoring",
+        ))
+        cat.checks.append(Check(
+            name="Project status",
+            passed=False, points=0, max_points=3,
+            detail="No data available",
+        ))
+        cat.checks.append(Check(
+            name="License",
+            passed=False, points=0, max_points=3,
+            detail="No data available",
+        ))
+        cat.checks.append(Check(
+            name="Issue health",
+            passed=False, points=0, max_points=4,
+            detail="No data available",
+        ))
+        return cat
 
     cat = Category(name="MAINTENANCE HEALTH", max_points=15)
 
@@ -611,43 +784,39 @@ def scan_agent_v2(url: str, skip_mcp: bool = False) -> ScoreResult:
         # Get agent card (used by multiple checks)
         agent_card, _ = _get_json(client, urljoin(url, "/.well-known/agent.json"))
 
-        # Get GitHub info (used by ecosystem + maintenance)
-        github_info = _extract_github_info(client, url, agent_card)
+        # Get MCP server name for GitHub search (P0 Fix 2)
+        mcp_server_name = mcp_info.server_name if mcp_info and mcp_info.connected else ""
 
-        # Category 1: Schema & Interface Quality (always applicable)
+        # Get GitHub info — uses 5 strategies including brand lookup and server name search
+        github_info = _extract_github_info(client, url, agent_card, mcp_server_name)
+
+        # Category 1: Schema & Interface Quality (always present)
         try:
-            cat1 = check_schema_quality(client, url, mcp_info)
-            result.categories.append(cat1)
+            result.categories.append(check_schema_quality(client, url, mcp_info))
         except Exception as e:
             result.errors.append(f"Schema check: {e}")
 
-        # Category 2: Functional Reliability (always applicable)
+        # Category 2: Functional Reliability (always present)
         try:
-            cat2 = check_functional_reliability(client, url, mcp_info)
-            result.categories.append(cat2)
+            result.categories.append(check_functional_reliability(client, url, mcp_info))
         except Exception as e:
             result.errors.append(f"Reliability check: {e}")
 
-        # Category 3: Developer Experience (always applicable)
+        # Category 3: Developer Experience (always present)
         try:
-            cat3 = check_developer_experience(client, url, github_info)
-            result.categories.append(cat3)
+            result.categories.append(check_developer_experience(client, url, github_info))
         except Exception as e:
             result.errors.append(f"DX check: {e}")
 
-        # Category 4: Ecosystem Signal (only if GitHub data available)
+        # Category 4: Ecosystem Signal (ALWAYS present — scores 0 if no data)
         try:
-            cat4 = check_ecosystem_signal(github_info)
-            if cat4 is not None:
-                result.categories.append(cat4)
+            result.categories.append(check_ecosystem_signal(github_info, url))
         except Exception as e:
             result.errors.append(f"Ecosystem check: {e}")
 
-        # Category 5: Maintenance Health (only if GitHub data available)
+        # Category 5: Maintenance Health (ALWAYS present — scores 0 if no data)
         try:
-            cat5 = check_maintenance_health(github_info)
-            if cat5 is not None:
-                result.categories.append(cat5)
+            result.categories.append(check_maintenance_health(github_info))
         except Exception as e:
             result.errors.append(f"Maintenance check: {e}")
 

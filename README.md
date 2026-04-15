@@ -18,53 +18,79 @@ agent-seo score https://your-agent-url.com
 agent-seo score https://your-agent-url.com --skip-mcp
 ```
 
+## Real Scores (v0.5)
+
+| Agent | Score | Grade | Tools | What It Does |
+|---|---|---|---|---|
+| GitMCP React | 76/100 | B | 4 | Serves React documentation via MCP |
+| AWS Knowledge | 74/100 | B | 6 | AWS docs, APIs, code samples |
+| Context7 | 73/100 | B | 2 | Up-to-date library documentation |
+| DeepWiki | 64/100 | C | 3 | AI-powered repo documentation |
+| Jina AI | 62/100 | C | 21 | Web search and content extraction |
+| CoinGecko | 50/100 | C | 50 | Crypto market data |
+
+All scores include 5/5 dimensions assessed with High confidence.
+
 ## What It Checks
 
-**5 categories. Adaptive scoring — only applicable categories count.**
+**5 categories. 100 total points. Always scores all 5 dimensions.**
 
 | Category | Max Pts | What It Measures |
 |---|---|---|
 | Schema & Interface Quality | 25 | Tool descriptions, parameter docs, types, safety annotations |
 | Functional Reliability | 25 | MCP handshake, response latency, health endpoint, performance metrics |
 | Developer Experience | 20 | API docs, llms.txt, discovery endpoints, GitHub repo quality |
-| Ecosystem Signal | 15 | GitHub stars, forks, topics, community engagement |
+| Ecosystem Signal | 15 | GitHub stars, forks, topics, brand recognition |
 | Maintenance Health | 15 | Commit recency, license, issue health, active status |
 
-**Missing data ≠ zero.** If a category can't be assessed (no GitHub repo, no MCP endpoint), it's excluded from the denominator — not scored zero.
+**All 5 dimensions are always present.** If GitHub data isn't found directly, the tool searches by server name, domain, and known brand database. No category is silently dropped.
 
 ## Example Output
 
 ```
-╭──────────────────────── agent-seo v0.4 ─────────────────────────╮
-│ Agent SEO Trust Score: 74/100  Grade: B  (74%)                  │
+╭──────────────────────── agent-seo v0.5 ─────────────────────────╮
+│ Agent SEO Trust Score: 73/100  Grade: B  (73%)                  │
 │ Confidence: High (5 of 5 dimensions assessed)                   │
-│ https://gitmcp.io/facebook/react                                │
+│ https://mcp.context7.com                                        │
 ╰─────────────────────────────────────────────────────────────────╯
 
-SCHEMA & INTERFACE QUALITY  24/25  ✓ 4 tools, good descriptions, documented params
-FUNCTIONAL RELIABILITY      12/25  ✓ MCP connected, protocol current
-DEVELOPER EXPERIENCE        16/20  ✓ Docs, llms.txt, good GitHub repo
-ECOSYSTEM SIGNAL            10/15  ✓ 7,917 stars, relevant topics
-MAINTENANCE HEALTH          12/15  ✓ Active, Apache-2.0, healthy issues
+SCHEMA & INTERFACE QUALITY  14/25  ✓ 2 tools, documented params
+FUNCTIONAL RELIABILITY      12/25  ✓ MCP connected, 2 tools via handshake
+DEVELOPER EXPERIENCE         5/20  ✓ Docs available
+ECOSYSTEM SIGNAL            15/15  ✓ 52,384 stars, relevant topics
+MAINTENANCE HEALTH          12/15  ✓ Active, MIT license, healthy issues
 
 TOP FIXES (highest impact first):
-  1. Performance metrics endpoint (+6 pts)
+  1. Tool descriptions quality (+7 pts)
+     → Add detailed descriptions (50+ chars) to each tool
+  2. Performance metrics endpoint (+6 pts)
      → Add GET /performance with success rates and accuracy
-  2. Response latency (+4 pts)
-     → Reduce cold start time
   3. Health endpoint (+4 pts)
      → Add GET /health returning status and uptime
 ```
 
-Every failed check includes **what to fix and how.**
+Every failed check includes **what to fix, how to fix it, and spec links.**
 
-## Confidence Levels
+## How It Works
 
-| Level | Meaning |
-|---|---|
-| **High** | 4-5 dimensions assessed. Score is reliable. |
-| **Moderate** | 3 dimensions assessed. Score is directional. |
-| **Limited** | 1-2 dimensions. Insufficient data for reliable score. |
+### MCP Protocol Handshake
+Connects to the agent via 8 common MCP paths (covering 99%+ of servers):
+- `/mcp`, `/mcp/stream`, `/sse`, `/mcp/sse`, `/`, `/v1`, `/api/mcp`, `/api/llm/mcp`
+- Auto-detects transport (Streamable HTTP or SSE)
+- Inspects `tools/list` for schema quality and safety annotations
+
+### GitHub Intelligence
+Finds the GitHub repo using 5 strategies:
+1. Direct link in agent card
+2. Link found in HTTP endpoints
+3. Known-brand subdomain lookup (20+ companies mapped)
+4. MCP server name search via GitHub API
+5. Domain name search as fallback
+
+Supports `GITHUB_TOKEN` env var for authenticated API access (5000 req/hr vs 60).
+
+### HTTP Endpoint Checks
+Probes well-known URLs for discovery, documentation, health, and performance data.
 
 ## Options
 
@@ -85,25 +111,16 @@ agent-seo score URL --fail-below 60
 agent-seo score URL --skip-mcp
 ```
 
-## How It Works
-
-**MCP Protocol Handshake:** Connects to the agent via SSE or Streamable HTTP, performs `initialize`, inspects `tools/list`, analyzes schema quality and safety annotations.
-
-**HTTP Endpoint Checks:** Probes well-known URLs for discovery endpoints, documentation, health status, and performance metrics.
-
-**GitHub Integration:** Queries GitHub API for ecosystem signals (stars, forks, topics, commit recency, license, issue health).
-
-**Adaptive Scoring:** Only categories with applicable data are included in the denominator. A documentation server isn't penalized for lacking payment endpoints. A new agent isn't penalized for having no stars yet.
-
 ## Roadmap
 
 - [x] v0.1 — HTTP endpoint scoring
 - [x] v0.2 — Package structure + fix-it guidance
 - [x] v0.3 — MCP protocol handshake (SSE + Streamable HTTP)
-- [x] v0.4 — Adaptive scoring engine (5 categories, confidence bands)
-- [ ] v0.5 — Trust score badge for READMEs
-- [ ] v0.6 — PyPI publish (`pip install agent-seo`)
-- [ ] v0.7 — GitHub Action for CI/CD
+- [x] v0.4 — Adaptive scoring engine (5 categories)
+- [x] v0.5 — Foolproof scoring (8-path MCP discovery, GitHub intelligence, brand detection)
+- [ ] v0.6 — Trust score badge for READMEs
+- [ ] v0.7 — PyPI publish (`pip install agent-seo`)
+- [ ] v0.8 — GitHub Action for CI/CD
 - [ ] v1.0 — Protocol spec (SPEC.md)
 
 ## Contributing

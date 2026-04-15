@@ -106,7 +106,7 @@ class ScoreResult:
     def to_dict(self) -> dict:
         """Convert to JSON-serializable dict."""
         return {
-            "agent_seo_version": "0.4",
+            "agent_seo_version": "0.5",
             "url": self.url,
             "timestamp": self.timestamp,
             "total_score": self.total_score,
