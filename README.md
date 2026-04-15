@@ -132,6 +132,35 @@ Supports `GITHUB_TOKEN` env var for authenticated API access (5000 req/hr vs 60)
 ### HTTP Endpoint Checks
 Probes well-known URLs for discovery, documentation, health, and performance data.
 
+## Deploy as Remote MCP Server
+
+Host agent-seo so anyone can use it without installing:
+
+```bash
+# Local
+uvicorn agent_seo.server:app --host 0.0.0.0 --port 8000
+
+# Docker
+docker build -t agent-seo .
+docker run -p 8000:8000 agent-seo
+
+# Railway (one-click deploy)
+railway up
+```
+
+Once deployed, users just add the URL:
+```json
+{"mcpServers": {"agent-seo": {"url": "https://your-deploy-url.com/mcp"}}}
+```
+
+The hosted version exposes all trust endpoints:
+- `/health` — uptime, scan count, error rate
+- `/.well-known/agent.json` — A2A Agent Card
+- `/.well-known/mcp.json` — MCP discovery
+- `/performance` — scoring service metrics
+- `/docs` — Swagger API documentation
+- `/llms.txt` — LLM-readable description
+
 ## Options
 
 ```bash
