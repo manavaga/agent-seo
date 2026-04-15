@@ -10,7 +10,7 @@ from rich.console import Console
 from rich.table import Table
 
 from . import __version__
-from .scanner import scan_agent
+from .scanner_v2 import scan_agent_v2 as scan_agent
 from .output.terminal import render
 
 console = Console()

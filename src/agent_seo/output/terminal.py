@@ -20,13 +20,27 @@ def render(result: ScoreResult) -> None:
     pct = (total / max_score * 100) if max_score else 0
     gc = GRADE_COLORS.get(grade, "white")
 
+    # Confidence
+    num_cats = len(result.categories)
+    if num_cats >= 4:
+        confidence = "High"
+        conf_color = "green"
+    elif num_cats >= 3:
+        confidence = "Moderate"
+        conf_color = "yellow"
+    else:
+        confidence = "Limited"
+        conf_color = "red"
+
     # Header
     console.print(Panel(
         f"[bold]Agent SEO Trust Score:[/bold] [{gc}]{total}/{max_score}[/{gc}]  "
         f"[dim]Grade:[/dim] [{gc}]{grade}[/{gc}]  "
-        f"[dim]({pct:.0f}%)[/dim]\n\n"
+        f"[dim]({pct:.0f}%)[/dim]\n"
+        f"[dim]Confidence:[/dim] [{conf_color}]{confidence}[/{conf_color}] "
+        f"[dim]({num_cats} of 5 dimensions assessed)[/dim]\n\n"
         f"[dim]{result.url}[/dim]",
-        title="[bold cyan]agent-seo v0.2[/bold cyan]",
+        title="[bold cyan]agent-seo v0.4[/bold cyan]",
         border_style="cyan",
     ))
 
