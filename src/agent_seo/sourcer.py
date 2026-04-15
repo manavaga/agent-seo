@@ -160,6 +160,114 @@ async def fetch_smithery_registry(client: httpx.AsyncClient) -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
+# GitHub awesome-mcp-servers (scrape README for remote server URLs)
+# ---------------------------------------------------------------------------
+
+AWESOME_REPOS = [
+    "punkpeye/awesome-mcp-servers",
+    "wong2/awesome-mcp-servers",
+    "modelcontextprotocol/servers",
+]
+
+
+async def fetch_awesome_mcp_servers(client: httpx.AsyncClient) -> list[dict]:
+    """Scrape awesome-mcp-servers READMEs for remote MCP server URLs.
+
+    Looks for HTTPS URLs that look like MCP endpoints.
+    """
+    import re
+    agents: list[dict] = []
+    token = os.getenv("GITHUB_TOKEN", "")
+    headers = {"Authorization": f"token {token}"} if token else {}
+
+    for repo in AWESOME_REPOS:
+        try:
+            resp = await client.get(
+                f"https://api.github.com/repos/{repo}/readme",
+                headers={**headers, "Accept": "application/vnd.github.raw"},
+                timeout=15,
+            )
+            if resp.status_code != 200:
+                continue
+            content = resp.text
+
+            # Find URLs that look like MCP endpoints
+            urls = re.findall(r'https?://[^\s\)>\]"\']+', content)
+            for url in urls:
+                url = url.rstrip(".,;:)")
+                # Filter for likely MCP server URLs (not GitHub, docs, npm, etc.)
+                if any(skip in url for skip in [
+                    "github.com", "npmjs.com", "pypi.org", "docs.", "blog.",
+                    "twitter.com", "x.com", "linkedin.com", "youtube.com",
+                    ".md", ".json", ".yaml", ".png", ".jpg", ".svg",
+                ]):
+                    continue
+                # Keep URLs that look like API/MCP endpoints
+                if any(hint in url for hint in [
+                    "/mcp", "/sse", "/api", "mcp.", "agent",
+                ]):
+                    agents.append({
+                        "url": url,
+                        "name": "",
+                        "source": "awesome_list",
+                        "source_id": repo,
+                    })
+        except Exception as e:
+            logger.error(f"Failed to scrape {repo}: {e}")
+
+    logger.info(f"Awesome lists: {len(agents)} potential agents found")
+    return agents
+
+
+# ---------------------------------------------------------------------------
+# Well-known public MCP servers (manually curated high-value targets)
+# ---------------------------------------------------------------------------
+
+WELL_KNOWN_SERVERS = [
+    {"url": "https://mcp.context7.com", "name": "Context7"},
+    {"url": "https://mcp.deepwiki.com", "name": "DeepWiki"},
+    {"url": "https://mcp.jina.ai", "name": "Jina AI"},
+    {"url": "https://gitmcp.io/facebook/react", "name": "GitMCP React"},
+    {"url": "https://mcp.api.coingecko.com", "name": "CoinGecko"},
+    {"url": "https://knowledge-mcp.global.api.aws", "name": "AWS Knowledge"},
+    {"url": "https://mcp.semgrep.com", "name": "Semgrep"},
+    {"url": "https://chic-empathy-production-7c2e.up.railway.app/mcp", "name": "agent-seo"},
+    {"url": "https://mcp.composio.dev", "name": "Composio"},
+    {"url": "https://mcp.linear.app", "name": "Linear"},
+    {"url": "https://mcp.stripe.com", "name": "Stripe"},
+    {"url": "https://mcp.paypal.com", "name": "PayPal"},
+    {"url": "https://mcp.sentry.dev", "name": "Sentry"},
+    {"url": "https://mcp.figma.com", "name": "Figma"},
+    {"url": "https://mcp.supabase.com", "name": "Supabase"},
+    {"url": "https://mcp.cloudflare.com", "name": "Cloudflare"},
+    {"url": "https://mcp.vercel.com", "name": "Vercel"},
+    {"url": "https://mcp.neon.tech", "name": "Neon"},
+    {"url": "https://mcp.axiom.co", "name": "Axiom"},
+    {"url": "https://mcp.browserbase.com", "name": "Browserbase"},
+    {"url": "https://mcp.exa.ai", "name": "Exa"},
+    {"url": "https://mcp.apify.com", "name": "Apify"},
+    {"url": "https://mcp.firecrawl.dev", "name": "Firecrawl"},
+    {"url": "https://mcp.tavily.com", "name": "Tavily"},
+    {"url": "https://mcp.e2b.dev", "name": "E2B"},
+    {"url": "https://mcp.resend.com", "name": "Resend"},
+    {"url": "https://mcp.upstash.com", "name": "Upstash"},
+]
+
+
+def get_well_known_agents() -> list[dict]:
+    """Return manually curated list of well-known MCP servers."""
+    agents = []
+    for s in WELL_KNOWN_SERVERS:
+        agents.append({
+            "url": s["url"],
+            "name": s["name"],
+            "source": "well_known",
+            "source_id": s["name"].lower(),
+        })
+    return agents
+
+
+# ---------------------------------------------------------------------------
 # Deduplication
 # ---------------------------------------------------------------------------
 
@@ -202,6 +310,7 @@ async def discover_agents(
         tasks = [fetch_mcp_registry(client)]
         if not skip_smithery:
             tasks.append(fetch_smithery_registry(client))
+        tasks.append(fetch_awesome_mcp_servers(client))
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -217,6 +326,12 @@ async def discover_agents(
             source = a.get("source", "unknown")
             source_counts[source] = source_counts.get(source, 0) + 1
         all_agents.extend(result)
+
+    # Add well-known servers
+    well_known = get_well_known_agents()
+    for a in well_known:
+        source_counts["well_known"] = source_counts.get("well_known", 0) + 1
+    all_agents.extend(well_known)
 
     # Deduplicate
     unique = deduplicate(all_agents)
