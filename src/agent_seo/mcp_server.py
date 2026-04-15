@@ -42,13 +42,12 @@ async def list_tools() -> list[Tool]:
         Tool(
             name="score_agent",
             description=(
-                "Score an AI agent endpoint on trust & capability metrics. "
-                "Checks 5 dimensions: Schema Quality, Functional Reliability, "
-                "Developer Experience, Ecosystem Signal, and Maintenance Health. "
-                "Returns a score out of 100 with grade (A-F), category breakdown, "
-                "and prioritized fix recommendations. "
-                "Use this to evaluate any MCP server or AI agent before integrating it, "
-                "or to check your own agent's trust score during development."
+                "Before integrating an AI agent, check if it's trustworthy. "
+                "Before releasing your own agent, check if it's discoverable. "
+                "Scores any MCP server or AI agent URL on 5 dimensions: Schema Quality, "
+                "Functional Reliability, Developer Experience, Ecosystem Signal, and "
+                "Maintenance Health. Returns 0-100 score with grade (A-F), category breakdown, "
+                "and prioritized fix recommendations showing exactly what to add for maximum improvement."
             ),
             inputSchema={
                 "type": "object",
@@ -69,9 +68,9 @@ async def list_tools() -> list[Tool]:
         Tool(
             name="compare_agents",
             description=(
-                "Compare two AI agent endpoints side by side. "
-                "Scores both agents and shows which one is stronger in each category. "
-                "Useful for choosing between similar agents or benchmarking your agent against a competitor."
+                "Choosing between two AI agents for a task? Scores both and shows which is "
+                "stronger in each category — schema quality, reliability, docs, ecosystem, "
+                "maintenance. Helps pick the more trustworthy option based on data, not guesswork."
             ),
             inputSchema={
                 "type": "object",
@@ -96,10 +95,10 @@ async def list_tools() -> list[Tool]:
         Tool(
             name="get_fix_recommendations",
             description=(
-                "Get detailed fix recommendations for an AI agent endpoint. "
-                "Scores the agent and returns a prioritized list of improvements "
-                "with expected point gains, code templates, and spec links. "
-                "Use this when building an agent to know exactly what to add next."
+                "Building an AI agent? Get a prioritized list of improvements to make it "
+                "more discoverable and trustworthy. Shows current score, what to fix, "
+                "expected point gains per fix, code templates, and spec links. "
+                "Use this before releasing your agent to maximize its discoverability."
             ),
             inputSchema={
                 "type": "object",

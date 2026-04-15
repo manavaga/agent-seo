@@ -2,7 +2,11 @@
 
 **SEO for Agents** — Score any AI agent endpoint on trust & capability metrics.
 
-Agents can't prove they're good. This tool shows them how.
+There are 56,000+ MCP servers. How do you know which ones are trustworthy before you use them? And if you're building one, how do you know it's discoverable?
+
+**Two use cases, one tool:**
+- **Before you USE an agent** → Score it to check if it's trustworthy, well-documented, and maintained
+- **Before you RELEASE an agent** → Score yourself to find what's missing and improve discoverability
 
 ## Quick Start
 

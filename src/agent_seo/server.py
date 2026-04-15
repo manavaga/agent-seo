@@ -85,15 +85,25 @@ async def mcp_endpoint(request: Request):
             {
                 "name": "score_agent",
                 "description": (
-                    "Score an AI agent endpoint on trust & capability metrics. "
-                    "Returns score out of 100, grade A-F, 5 category breakdown, "
-                    "and prioritized fix recommendations."
+                    "Before integrating an AI agent, check if it's trustworthy. "
+                    "Before releasing your own agent, check if it's discoverable. "
+                    "Scores any MCP server or AI agent URL on 5 dimensions: Schema Quality, "
+                    "Functional Reliability, Developer Experience, Ecosystem Signal, and "
+                    "Maintenance Health. Returns 0-100 score with grade (A-F), category breakdown, "
+                    "and prioritized fix recommendations showing exactly what to add for maximum improvement."
                 ),
                 "inputSchema": {
                     "type": "object",
                     "properties": {
-                        "url": {"type": "string", "description": "Agent HTTPS URL to score"},
-                        "skip_mcp": {"type": "boolean", "description": "Skip MCP handshake (faster)", "default": False},
+                        "url": {
+                            "type": "string",
+                            "description": "The HTTPS URL of the AI agent or MCP server to score (e.g., https://mcp.context7.com, https://mcp.jina.ai)",
+                        },
+                        "skip_mcp": {
+                            "type": "boolean",
+                            "description": "Skip MCP protocol handshake for faster HTTP-only scoring. Default: false. Set true for non-MCP endpoints.",
+                            "default": False,
+                        },
                     },
                     "required": ["url"],
                 },
@@ -101,12 +111,16 @@ async def mcp_endpoint(request: Request):
             },
             {
                 "name": "compare_agents",
-                "description": "Compare two AI agents side by side on trust metrics. Scores both and shows category-level differences.",
+                "description": (
+                    "Choosing between two AI agents for a task? Scores both and shows which is "
+                    "stronger in each category — schema quality, reliability, docs, ecosystem, "
+                    "maintenance. Helps pick the more trustworthy option based on data."
+                ),
                 "inputSchema": {
                     "type": "object",
                     "properties": {
-                        "url_a": {"type": "string", "description": "First agent URL"},
-                        "url_b": {"type": "string", "description": "Second agent URL"},
+                        "url_a": {"type": "string", "description": "First agent URL to compare"},
+                        "url_b": {"type": "string", "description": "Second agent URL to compare"},
                     },
                     "required": ["url_a", "url_b"],
                 },
@@ -114,11 +128,15 @@ async def mcp_endpoint(request: Request):
             },
             {
                 "name": "get_fix_recommendations",
-                "description": "Get prioritized fix recommendations for an AI agent with expected point gains and code templates.",
+                "description": (
+                    "Building an AI agent? Get a prioritized list of improvements to make it "
+                    "more discoverable and trustworthy. Shows current score, what to fix, "
+                    "expected point gains per fix, code templates, and spec links."
+                ),
                 "inputSchema": {
                     "type": "object",
                     "properties": {
-                        "url": {"type": "string", "description": "Agent URL to get fixes for"},
+                        "url": {"type": "string", "description": "The agent URL to get fix recommendations for"},
                     },
                     "required": ["url"],
                 },
@@ -219,9 +237,14 @@ async def agent_card():
     return {
         "name": "agent-seo",
         "description": (
-            "SEO for Agents — Score any AI agent endpoint on trust & capability metrics. "
-            "Checks Schema Quality, Functional Reliability, Developer Experience, "
-            "Ecosystem Signal, and Maintenance Health. Returns scores with fix recommendations."
+            "How do you know if an AI agent is any good before you use it? "
+            "And if you're building one, how do you know it's discoverable? "
+            "There are 56,000+ MCP servers — none let another agent evaluate them before committing. "
+            "agent-seo solves both: it scores any AI agent on 5 trust dimensions (Schema Quality, "
+            "Reliability, Developer Experience, Ecosystem Signal, Maintenance Health) and tells you "
+            "exactly what's missing and how to fix it. "
+            "Use it to evaluate agents before integrating, or to improve your own agent before releasing. "
+            "Think of it as SEO for agents — the infrastructure that makes agents evaluable, not just discoverable."
         ),
         "url": BASE_URL,
         "version": __version__,
@@ -234,24 +257,48 @@ async def agent_card():
         "capabilities": [
             {
                 "name": "score_agent",
-                "description": "Score any AI agent on 5 trust dimensions (0-100). Returns grade, breakdown, and fixes.",
+                "description": (
+                    "Before integrating an AI agent, check if it's trustworthy. "
+                    "Scores any MCP server or AI agent endpoint on 5 dimensions: "
+                    "How well does it describe its tools? Does the MCP handshake work? "
+                    "Is it documented? Do others use it? Is it maintained? "
+                    "Returns a 0-100 score with letter grade and a prioritized list of fixes "
+                    "showing exactly what to add and how many points each improvement is worth."
+                ),
             },
             {
                 "name": "compare_agents",
-                "description": "Compare two agents side by side across all trust categories.",
+                "description": (
+                    "Choosing between two AI agents for a task? "
+                    "Scores both and shows which one is stronger in each category — "
+                    "schema quality, reliability, documentation, ecosystem, and maintenance. "
+                    "Helps you pick the more trustworthy option based on data, not guesswork."
+                ),
             },
             {
                 "name": "get_fix_recommendations",
-                "description": "Get prioritized improvement suggestions with expected point gains.",
+                "description": (
+                    "Building an AI agent and want to make it more discoverable and trustworthy? "
+                    "Get a prioritized list of improvements: what to add, expected point gain, "
+                    "code templates, and links to the relevant specs. "
+                    "Shows your current score and what it would be after each fix."
+                ),
             },
         ],
         "protocols": {
             "mcp": f"{BASE_URL}/mcp",
             "a2a": f"{BASE_URL}/.well-known/agent.json",
         },
-        "pricing": "Free",
-        "update_frequency": "Real-time scoring",
+        "pricing": "Free — no authentication required",
+        "update_frequency": "Real-time scoring on demand",
         "response_format": "application/json",
+        "use_cases": [
+            "Evaluate an MCP server before integrating it into your workflow",
+            "Check your own agent's trust score during development",
+            "Compare competing agents to pick the best one for a task",
+            "Get actionable fixes to improve your agent's discoverability",
+            "Audit agent endpoints for compliance with A2A and MCP standards",
+        ],
     }
 
 
