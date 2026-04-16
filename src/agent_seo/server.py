@@ -79,6 +79,27 @@ def startup_init_db():
 
 
 # ---------------------------------------------------------------------------
+# Admin endpoints (for remote operations)
+# ---------------------------------------------------------------------------
+
+@app.post("/admin/discover")
+async def admin_discover():
+    """Trigger agent discovery from registries (runs async)."""
+    import asyncio
+    from .sourcer import discover_agents
+    result = await discover_agents(skip_smithery=True)
+    return result
+
+
+@app.post("/admin/rescore")
+async def admin_rescore(limit: int = 50, concurrency: int = 5):
+    """Trigger batch rescoring. Default: 50 agents at concurrency 5."""
+    from .batch_scorer import rescore_all
+    result = await rescore_all(concurrency=concurrency, limit=limit)
+    return result
+
+
+# ---------------------------------------------------------------------------
 # Leaderboard API endpoints
 # ---------------------------------------------------------------------------
 
