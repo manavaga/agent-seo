@@ -1,0 +1,85 @@
+name: Agent Scoring Pipeline
+
+on:
+  schedule:
+    # Daily at 2:00 AM UTC — discover new agents
+    - cron: '0 2 * * *'
+    # Weekly Sunday at 3:00 AM UTC — full rescore
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to run'
+        required: true
+        default: 'discover'
+        type: choice
+        options:
+          - discover
+          - rescore
+          - both
+      rescore_limit:
+        description: 'Max agents to rescore (0 = all)'
+        required: false
+        default: '0'
+
+env:
+  RAILWAY_URL: https://chic-empathy-production-7c2e.up.railway.app
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 2 * * *' || github.event.inputs.action == 'discover' || github.event.inputs.action == 'both'
+    steps:
+      - name: Trigger Discovery
+        run: |
+          echo "Triggering agent discovery..."
+          curl -s -X POST "$RAILWAY_URL/admin/discover" | jq .
+          echo "Discovery started. Waiting for completion..."
+
+          # Poll until done (max 5 min)
+          for i in $(seq 1 20); do
+            sleep 15
+            STATUS=$(curl -s "$RAILWAY_URL/admin/status")
+            RUNNING=$(echo "$STATUS" | jq -r '.running')
+            AGENTS=$(echo "$STATUS" | jq -r '.db_agent_count')
+            echo "  Check $i: running=$RUNNING agents=$AGENTS"
+            if [ "$RUNNING" = "false" ]; then
+              echo "Discovery complete!"
+              echo "$STATUS" | jq .
+              break
+            fi
+          done
+
+  rescore:
+    runs-on: ubuntu-latest
+    needs: [discover]
+    if: always() && (github.event.schedule == '0 3 * * 0' || github.event.inputs.action == 'rescore' || github.event.inputs.action == 'both')
+    steps:
+      - name: Trigger Rescore
+        run: |
+          LIMIT="${{ github.event.inputs.rescore_limit || '0' }}"
+          echo "Triggering rescore (limit=$LIMIT)..."
+          curl -s -X POST "$RAILWAY_URL/admin/rescore?limit=$LIMIT&concurrency=5" | jq .
+          echo "Rescore started. Monitoring progress..."
+
+          # Poll until done (max 2 hours)
+          for i in $(seq 1 480); do
+            sleep 15
+            STATUS=$(curl -s "$RAILWAY_URL/admin/status")
+            RUNNING=$(echo "$STATUS" | jq -r '.running')
+            SCORED=$(echo "$STATUS" | jq -r '.db_scored_count')
+            LAST=$(echo "$STATUS" | jq -r '.last_result')
+            echo "  Check $i: running=$RUNNING scored=$SCORED"
+            if [ "$RUNNING" = "false" ] && [ "$i" -gt 2 ]; then
+              echo "Rescore complete!"
+              echo "$STATUS" | jq .
+              break
+            fi
+          done
+
+      - name: Verify Results
+        run: |
+          echo "=== Leaderboard Top 5 ==="
+          curl -s "$RAILWAY_URL/leaderboard?per_page=5" | jq '.agents[] | {rank, name, total_score, grade}'
+          echo "=== Ecosystem Stats ==="
+          curl -s "$RAILWAY_URL/trends" | jq '.current'
