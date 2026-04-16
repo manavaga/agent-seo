@@ -82,21 +82,71 @@ def startup_init_db():
 # Admin endpoints (for remote operations)
 # ---------------------------------------------------------------------------
 
+_admin_task_status: dict = {"running": False, "last_result": None}
+
+
 @app.post("/admin/discover")
 async def admin_discover():
-    """Trigger agent discovery from registries (runs async)."""
+    """Trigger agent discovery from registries (runs in background)."""
     import asyncio
     from .sourcer import discover_agents
-    result = await discover_agents(skip_smithery=True)
-    return result
+
+    if _admin_task_status["running"]:
+        return {"status": "already_running", "last_result": _admin_task_status["last_result"]}
+
+    async def run():
+        _admin_task_status["running"] = True
+        try:
+            result = await discover_agents(skip_smithery=True)
+            _admin_task_status["last_result"] = {"task": "discover", **result}
+        except Exception as e:
+            _admin_task_status["last_result"] = {"task": "discover", "error": str(e)}
+        finally:
+            _admin_task_status["running"] = False
+
+    asyncio.create_task(run())
+    return {"status": "started", "task": "discover"}
 
 
 @app.post("/admin/rescore")
 async def admin_rescore(limit: int = 50, concurrency: int = 5):
-    """Trigger batch rescoring. Default: 50 agents at concurrency 5."""
+    """Trigger batch rescoring in background. Default: 50 agents at concurrency 5."""
+    import asyncio
     from .batch_scorer import rescore_all
-    result = await rescore_all(concurrency=concurrency, limit=limit)
-    return result
+
+    if _admin_task_status["running"]:
+        return {"status": "already_running", "last_result": _admin_task_status["last_result"]}
+
+    async def run():
+        _admin_task_status["running"] = True
+        try:
+            result = await rescore_all(concurrency=concurrency, limit=limit)
+            _admin_task_status["last_result"] = {"task": "rescore", **result}
+        except Exception as e:
+            _admin_task_status["last_result"] = {"task": "rescore", "error": str(e)}
+        finally:
+            _admin_task_status["running"] = False
+
+    asyncio.create_task(run())
+    return {"status": "started", "task": "rescore", "limit": limit, "concurrency": concurrency}
+
+
+@app.get("/admin/status")
+async def admin_status():
+    """Check status of background admin tasks."""
+    from .db import get_agent_count, compute_ecosystem_stats
+    try:
+        agent_count = get_agent_count()
+        stats = compute_ecosystem_stats()
+    except Exception:
+        agent_count = 0
+        stats = {}
+    return {
+        "running": _admin_task_status["running"],
+        "last_result": _admin_task_status["last_result"],
+        "db_agent_count": agent_count,
+        "db_scored_count": stats.get("scored_count", 0),
+    }
 
 
 # ---------------------------------------------------------------------------
