@@ -95,7 +95,7 @@ def extract_improvements(result_dict: dict) -> list[str]:
 # ---------------------------------------------------------------------------
 
 def detect_change(old_score: Optional[dict], new_result: dict) -> Optional[dict]:
-    """Detect material score changes (>10pt swing).
+    """Detect material score changes (>5% or >5pt swing).
 
     Returns None if no material change, or:
     {"old_score": int, "new_score": int, "delta": int, "changes": [...]}
@@ -107,7 +107,9 @@ def detect_change(old_score: Optional[dict], new_result: dict) -> Optional[dict]
     new_total = new_result.get("total_score", 0)
     delta = new_total - old_total
 
-    if abs(delta) < 10:
+    # 5% of previous score, minimum 5 points
+    threshold = max(5, old_total * 0.05)
+    if abs(delta) < threshold:
         return None  # Not material
 
     # Find which checks flipped
@@ -127,7 +129,9 @@ def detect_change(old_score: Optional[dict], new_result: dict) -> Optional[dict]
                     "check": name,
                     "was": "passed" if old.get("passed") else "failed",
                     "now": "passed" if check.get("passed") else "failed",
-                    "points": check.get("points", 0) - old.get("points", 0),
+                    "old_points": old.get("points", 0),
+                    "new_points": check.get("points", 0),
+                    "points_delta": check.get("points", 0) - old.get("points", 0),
                 })
 
     return {
@@ -196,22 +200,11 @@ async def rescore_all(
             score_result = result["result"]
             d = score_result.to_dict()
 
-            # Extract GitHub info from the result
-            github_stars = 0
-            github_forks = 0
-            for cat in d.get("categories", []):
-                for check in cat.get("checks", []):
-                    if "stars" in check.get("detail", "").lower():
-                        # Try to extract star count from detail text
-                        import re
-                        m = re.search(r"([\d,]+)\s*stars", check.get("detail", ""))
-                        if m:
-                            github_stars = int(m.group(1).replace(",", ""))
-                    if "forks" in check.get("detail", "").lower():
-                        import re
-                        m = re.search(r"([\d,]+)\s*forks", check.get("detail", ""))
-                        if m:
-                            github_forks = int(m.group(1).replace(",", ""))
+            # Extract GitHub info directly from ScoreResult
+            gi = d.get("github_info") or {}
+            github_stars = gi.get("stars", 0) or 0
+            github_forks = gi.get("forks", 0) or 0
+            repository_url = gi.get("url", "") or ""
 
             # Get previous score for change detection
             old_score = get_latest_score(agent_id, db_path)
@@ -227,7 +220,29 @@ async def rescore_all(
             )
             mark_agent_success(agent_id, db_path)
 
-            # Detect material changes
+            # Save rich metadata (tools, server info, capabilities)
+            from .db import upsert_agent_metadata
+            mcp_info = score_result.mcp_info
+            if mcp_info and mcp_info.connected:
+                upsert_agent_metadata(
+                    agent_id=agent_id,
+                    server_name=mcp_info.server_name,
+                    server_version=mcp_info.server_version,
+                    protocol_version=mcp_info.protocol_version,
+                    transport_type=mcp_info.transport,
+                    capabilities=mcp_info.capabilities,
+                    tools=mcp_info.tools,
+                    repository_url=repository_url,
+                    db_path=db_path,
+                )
+            elif repository_url:
+                upsert_agent_metadata(
+                    agent_id=agent_id,
+                    repository_url=repository_url,
+                    db_path=db_path,
+                )
+
+            # Detect material changes (5% threshold)
             change = detect_change(old_score, d)
             if change:
                 insert_score_change(

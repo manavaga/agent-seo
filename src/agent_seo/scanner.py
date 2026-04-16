@@ -789,6 +789,7 @@ def scan_agent_v2(url: str, skip_mcp: bool = False) -> ScoreResult:
 
         # Get GitHub info — uses 5 strategies including brand lookup and server name search
         github_info = _extract_github_info(client, url, agent_card, mcp_server_name)
+        result.github_info = github_info
 
         # Category 1: Schema & Interface Quality (always present)
         try:

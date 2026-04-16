@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>agent-seo | AI Agent Leaderboard</title>
+<style>
+  :root {
+    --bg: #0f0f1e; --bg2: #171730; --bg3: #1e1e3a; --border: #2a2a4a;
+    --text: #e0e0f0; --dim: #8888aa; --accent: #6366f1;
+    --green: #34d399; --blue: #60a5fa; --cyan: #22d3ee;
+    --yellow: #fbbf24; --red: #f87171;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .header { padding: 24px 32px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .header h1 { font-size: 22px; font-weight: 700; }
+  .header h1 span { background: var(--accent); color: #fff; padding: 2px 10px; border-radius: 6px; font-size: 16px; margin-right: 8px; }
+  .header-links { display: flex; gap: 16px; font-size: 13px; color: var(--dim); }
+  .header-links a { color: var(--dim); } .header-links a:hover { color: var(--text); }
+
+  .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; padding: 24px 32px; }
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; }
+  .stat-card .value { font-size: 28px; font-weight: 700; }
+  .stat-card .label { font-size: 12px; color: var(--dim); margin-top: 4px; }
+  .stat-card .value.red { color: var(--red); }
+
+  .controls { padding: 0 32px 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .controls input, .controls select { background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 8px 14px; border-radius: 8px; font-size: 14px; outline: none; }
+  .controls input:focus, .controls select:focus { border-color: var(--accent); }
+  .controls input { width: 280px; }
+
+  .grade-bar { padding: 0 32px 24px; display: flex; gap: 4px; height: 28px; border-radius: 6px; overflow: hidden; }
+  .grade-bar div { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #000; cursor: pointer; transition: opacity 0.2s; }
+  .grade-bar div:hover { opacity: 0.8; }
+
+  .table-wrap { padding: 0 32px 32px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; color: var(--dim); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+  th:hover { color: var(--text); }
+  th.sorted { color: var(--accent); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: var(--bg3); }
+  tr { cursor: pointer; }
+  .rank { color: var(--dim); width: 40px; }
+  .agent-name { font-weight: 500; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .score { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .grade { font-weight: 700; width: 50px; text-align: center; }
+  .grade-A { color: var(--green); } .grade-B { color: var(--blue); } .grade-C { color: var(--cyan); }
+  .grade-D { color: var(--yellow); } .grade-F { color: var(--red); }
+  .mcp-yes { color: var(--green); } .mcp-no { color: var(--red); }
+  .tools { color: var(--dim); text-align: right; }
+  .delta-pos { color: var(--green); } .delta-neg { color: var(--red); }
+
+  .pagination { padding: 0 32px 32px; display: flex; gap: 8px; align-items: center; }
+  .pagination button { background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+  .pagination button:hover { border-color: var(--accent); }
+  .pagination button:disabled { opacity: 0.4; cursor: default; }
+  .pagination .info { color: var(--dim); font-size: 13px; }
+
+  /* Detail panel */
+  .detail-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; }
+  .detail-overlay.active { display: block; }
+  .detail-panel { position: fixed; right: 0; top: 0; bottom: 0; width: 560px; max-width: 90vw; background: var(--bg); border-left: 1px solid var(--border); overflow-y: auto; z-index: 101; padding: 32px; transform: translateX(100%); transition: transform 0.25s; }
+  .detail-panel.active { transform: translateX(0); }
+  .detail-close { position: absolute; top: 16px; right: 16px; background: none; border: none; color: var(--dim); font-size: 24px; cursor: pointer; }
+  .detail-close:hover { color: var(--text); }
+  .detail-panel h2 { font-size: 20px; margin-bottom: 4px; padding-right: 40px; }
+  .detail-panel .url { color: var(--dim); font-size: 13px; word-break: break-all; margin-bottom: 16px; }
+  .detail-panel .desc { color: var(--dim); font-size: 14px; margin-bottom: 20px; line-height: 1.5; }
+  .detail-score { font-size: 36px; font-weight: 700; margin-bottom: 4px; }
+  .detail-grade { font-size: 14px; margin-bottom: 20px; }
+  .cat-bar { margin-bottom: 8px; }
+  .cat-bar .cat-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 3px; }
+  .cat-bar .cat-track { background: var(--bg3); height: 8px; border-radius: 4px; overflow: hidden; }
+  .cat-bar .cat-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .section-title { font-size: 14px; font-weight: 600; margin: 20px 0 10px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; }
+  .list-item { font-size: 13px; padding: 6px 0; border-bottom: 1px solid var(--border); color: var(--text); }
+  .list-item .dim { color: var(--dim); }
+  .tool-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+  .tool-item .tool-name { font-weight: 600; font-size: 13px; color: var(--accent); }
+  .tool-item .tool-desc { font-size: 12px; color: var(--dim); margin-top: 4px; line-height: 1.4; }
+  .history-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--border); }
+
+  .footer { padding: 24px 32px; text-align: center; color: var(--dim); font-size: 12px; border-top: 1px solid var(--border); }
+
+  @media (max-width: 768px) {
+    .header, .stats-bar, .controls, .table-wrap, .pagination, .footer { padding-left: 16px; padding-right: 16px; }
+    .detail-panel { width: 100vw; }
+    .controls input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><span>agent-seo</span> AI Agent Leaderboard</h1>
+  <div class="header-links">
+    <a href="https://github.com/manavaga/agent-seo" target="_blank">GitHub</a>
+    <a href="/docs" target="_blank">API Docs</a>
+    <a href="/.well-known/agent.json" target="_blank">Agent Card</a>
+    <a href="/trends">Trends API</a>
+  </div>
+</div>
+
+<div class="stats-bar" id="stats-bar"></div>
+
+<div class="grade-bar" id="grade-bar"></div>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="Search agents by name or URL...">
+  <select id="grade-filter">
+    <option value="">All Grades</option>
+    <option value="A">A (85+)</option>
+    <option value="B">B (70-84)</option>
+    <option value="C">C (50-69)</option>
+    <option value="D">D (30-49)</option>
+    <option value="F">F (&lt;30)</option>
+  </select>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th class="rank">#</th>
+        <th data-sort="name">Agent</th>
+        <th data-sort="total_score" class="sorted">Score</th>
+        <th>Grade</th>
+        <th>MCP</th>
+        <th data-sort="mcp_tool_count">Tools</th>
+        <th data-sort="github_stars">Stars</th>
+        <th>Delta</th>
+      </tr>
+    </thead>
+    <tbody id="leaderboard-body"></tbody>
+  </table>
+</div>
+
+<div class="pagination" id="pagination"></div>
+
+<div class="detail-overlay" id="detail-overlay"></div>
+<div class="detail-panel" id="detail-panel">
+  <button class="detail-close" id="detail-close">&times;</button>
+  <div id="detail-content"></div>
+</div>
+
+<div class="footer">
+  agent-seo v0.7 &mdash; open source &mdash;
+  <a href="https://github.com/manavaga/agent-seo">github.com/manavaga/agent-seo</a>
+</div>
+
+<script>
+const API = '';
+let state = { page: 1, perPage: 30, sortBy: 'total_score', sortDir: 'desc', grade: '', search: '' };
+let debounceTimer;
+
+// --- Fetch & Render ---
+async function loadStats() {
+  try {
+    const res = await fetch(`${API}/trends`);
+    const data = await res.json();
+    const c = data.current || {};
+    const dist = c.grade_distribution || {};
+    const total = Object.values(dist).reduce((a,b) => a+b, 0);
+
+    document.getElementById('stats-bar').innerHTML = `
+      <div class="stat-card"><div class="value">${(c.scored_count||0).toLocaleString()}</div><div class="label">Agents Scored</div></div>
+      <div class="stat-card"><div class="value red">${c.avg_score||0}/100</div><div class="label">Average Score</div></div>
+      <div class="stat-card"><div class="value red">${dist.A||0}</div><div class="label">A Grades</div></div>
+      <div class="stat-card"><div class="value">${c.pct_mcp_connected||0}%</div><div class="label">MCP Connected</div></div>
+      <div class="stat-card"><div class="value">${(dist.C||0)+(dist.B||0)+(dist.A||0)}</div><div class="label">Score 50+</div></div>
+    `;
+
+    // Grade bar
+    const colors = {A:'var(--green)',B:'var(--blue)',C:'var(--cyan)',D:'var(--yellow)',F:'var(--red)'};
+    let barHTML = '';
+    for (const g of ['A','B','C','D','F']) {
+      const count = dist[g]||0;
+      const pct = total ? (count/total*100) : 0;
+      if (pct > 0.5) barHTML += `<div style="width:${pct}%;background:${colors[g]}" onclick="filterGrade('${g}')" title="${g}: ${count} (${pct.toFixed(0)}%)">${g} ${count}</div>`;
+    }
+    document.getElementById('grade-bar').innerHTML = barHTML;
+  } catch(e) { console.error('Stats error:', e); }
+}
+
+async function loadLeaderboard() {
+  const params = new URLSearchParams({
+    page: state.page, per_page: state.perPage,
+    sort_by: state.sortBy, sort_dir: state.sortDir,
+  });
+  if (state.grade) params.set('grade', state.grade);
+  if (state.search) params.set('search', state.search);
+
+  try {
+    const res = await fetch(`${API}/leaderboard?${params}`);
+    const data = await res.json();
+    renderTable(data);
+    renderPagination(data);
+  } catch(e) { console.error('Leaderboard error:', e); }
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('leaderboard-body');
+  if (!data.agents || data.agents.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--dim);padding:40px">No agents found</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.agents.map(a => {
+    const name = a.name || a.url;
+    const displayName = name.length > 40 ? name.slice(0,37)+'...' : name;
+    const mcp = a.mcp_connected ? '<span class="mcp-yes">&#10003;</span>' : '<span class="mcp-no">&#10007;</span>';
+    const stars = a.github_stars ? a.github_stars.toLocaleString() : '&mdash;';
+    let delta = '';
+    if (a.score_delta != null) {
+      if (a.score_delta > 0) delta = `<span class="delta-pos">+${a.score_delta}</span>`;
+      else if (a.score_delta < 0) delta = `<span class="delta-neg">${a.score_delta}</span>`;
+      else delta = '=';
+    }
+    return `<tr onclick="openDetail('${encodeURIComponent(a.url)}')">
+      <td class="rank">${a.rank}</td>
+      <td class="agent-name" title="${a.url}">${displayName}</td>
+      <td class="score">${a.total_score}/${a.max_score}</td>
+      <td class="grade grade-${a.grade}">${a.grade}</td>
+      <td>${mcp}</td>
+      <td class="tools">${a.mcp_tool_count||0}</td>
+      <td class="tools">${stars}</td>
+      <td>${delta}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderPagination(data) {
+  const el = document.getElementById('pagination');
+  el.innerHTML = `
+    <button onclick="changePage(${data.page-1})" ${data.page<=1?'disabled':''}>Prev</button>
+    <span class="info">Page ${data.page} of ${data.total_pages} (${data.total} agents)</span>
+    <button onclick="changePage(${data.page+1})" ${data.page>=data.total_pages?'disabled':''}>Next</button>
+  `;
+}
+
+// --- Detail Panel ---
+async function openDetail(encodedUrl) {
+  const url = decodeURIComponent(encodedUrl);
+  document.getElementById('detail-overlay').classList.add('active');
+  document.getElementById('detail-panel').classList.add('active');
+  document.getElementById('detail-content').innerHTML = '<p style="color:var(--dim)">Loading...</p>';
+
+  try {
+    const res = await fetch(`${API}/leaderboard/${encodeURIComponent(url)}`);
+    const data = await res.json();
+    if (data.error) { document.getElementById('detail-content').innerHTML = `<p>${data.error}</p>`; return; }
+    renderDetail(data);
+  } catch(e) { document.getElementById('detail-content').innerHTML = `<p>Error: ${e.message}</p>`; }
+}
+
+function renderDetail(data) {
+  const a = data.agent || {};
+  const s = data.current_score || {};
+  const meta = data.metadata || {};
+  const cats = s.category_scores || {};
+  const colors = {
+    'SCHEMA & INTERFACE QUALITY': 'var(--blue)',
+    'FUNCTIONAL RELIABILITY': 'var(--green)',
+    'DEVELOPER EXPERIENCE': 'var(--cyan)',
+    'ECOSYSTEM SIGNAL': 'var(--yellow)',
+    'MAINTENANCE HEALTH': 'var(--red)',
+  };
+
+  let catBars = '';
+  for (const [name, cat] of Object.entries(cats)) {
+    const pct = cat.max ? (cat.score/cat.max*100) : 0;
+    const shortName = name.split(' ').slice(0,2).join(' ');
+    const color = colors[name] || 'var(--accent)';
+    catBars += `<div class="cat-bar">
+      <div class="cat-label"><span>${shortName}</span><span>${cat.score}/${cat.max}</span></div>
+      <div class="cat-track"><div class="cat-fill" style="width:${pct}%;background:${color}"></div></div>
+    </div>`;
+  }
+
+  const desc = meta.registry_description || meta.description || '';
+  const tools = meta.tools_json || [];
+
+  let toolsHTML = '';
+  if (tools.length > 0) {
+    toolsHTML = `<div class="section-title">Tools (${tools.length})</div>`;
+    for (const t of tools.slice(0, 20)) {
+      const tdesc = (t.description||'').slice(0, 200);
+      toolsHTML += `<div class="tool-item"><div class="tool-name">${t.name||'unnamed'}</div><div class="tool-desc">${tdesc}</div></div>`;
+    }
+    if (tools.length > 20) toolsHTML += `<p class="dim" style="font-size:12px">...and ${tools.length-20} more</p>`;
+  }
+
+  let strengthsHTML = '';
+  const strengths = s.strengths || [];
+  if (strengths.length > 0) {
+    strengthsHTML = `<div class="section-title">Strengths</div>` + strengths.slice(0,5).map(s => `<div class="list-item">${s}</div>`).join('');
+  }
+
+  let improvementsHTML = '';
+  const improvements = s.improvements || [];
+  if (improvements.length > 0) {
+    improvementsHTML = `<div class="section-title">Improvements</div>` + improvements.slice(0,5).map(s => `<div class="list-item">${s}</div>`).join('');
+  }
+
+  let historyHTML = '';
+  const history = data.history || [];
+  if (history.length > 1) {
+    historyHTML = `<div class="section-title">Score History</div>` + history.slice(0,10).map(h =>
+      `<div class="history-row"><span>${h.scored_at?.slice(0,10)}</span><span>${h.total_score}/${h.max_score} (${h.grade})</span></div>`
+    ).join('');
+  }
+
+  let serverInfo = '';
+  if (meta.server_name || meta.transport_type) {
+    serverInfo = `<div class="section-title">Server Info</div>
+      <div class="list-item">Name: <span class="dim">${meta.server_name||'—'}</span></div>
+      <div class="list-item">Version: <span class="dim">${meta.server_version||'—'}</span></div>
+      <div class="list-item">Protocol: <span class="dim">${meta.protocol_version||'—'}</span></div>
+      <div class="list-item">Transport: <span class="dim">${meta.transport_type||'—'}</span></div>`;
+    if (meta.repository_url) serverInfo += `<div class="list-item">Repo: <a href="${meta.repository_url}" target="_blank">${meta.repository_url}</a></div>`;
+  }
+
+  document.getElementById('detail-content').innerHTML = `
+    <h2>${a.name || a.url}</h2>
+    <div class="url">${a.url}</div>
+    ${desc ? `<div class="desc">${desc}</div>` : ''}
+    <div class="detail-score grade-${s.grade}">${s.total_score}/${s.max_score}</div>
+    <div class="detail-grade">Grade ${s.grade} &bull; MCP ${s.mcp_connected?'Connected':'Not Connected'} &bull; ${s.mcp_tool_count||0} tools</div>
+    ${catBars}
+    ${strengthsHTML}
+    ${improvementsHTML}
+    ${toolsHTML}
+    ${serverInfo}
+    ${historyHTML}
+  `;
+}
+
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('active');
+  document.getElementById('detail-panel').classList.remove('active');
+}
+
+// --- Controls ---
+function filterGrade(g) {
+  state.grade = state.grade === g ? '' : g;
+  document.getElementById('grade-filter').value = state.grade;
+  state.page = 1;
+  loadLeaderboard();
+}
+
+function changePage(p) { state.page = p; loadLeaderboard(); }
+
+document.getElementById('search').addEventListener('input', (e) => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => { state.search = e.target.value; state.page = 1; loadLeaderboard(); }, 300);
+});
+
+document.getElementById('grade-filter').addEventListener('change', (e) => {
+  state.grade = e.target.value; state.page = 1; loadLeaderboard();
+});
+
+document.querySelectorAll('th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.sort;
+    if (state.sortBy === col) state.sortDir = state.sortDir === 'desc' ? 'asc' : 'desc';
+    else { state.sortBy = col; state.sortDir = 'desc'; }
+    document.querySelectorAll('th').forEach(t => t.classList.remove('sorted'));
+    th.classList.add('sorted');
+    loadLeaderboard();
+  });
+});
+
+document.getElementById('detail-close').addEventListener('click', closeDetail);
+document.getElementById('detail-overlay').addEventListener('click', closeDetail);
+
+// --- Init ---
+loadStats();
+loadLeaderboard();
+</script>
+</body>
+</html>

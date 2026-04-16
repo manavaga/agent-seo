@@ -68,6 +68,9 @@ async def fetch_mcp_registry(client: httpx.AsyncClient) -> list[dict]:
 
             name = server.get("title") or server.get("name", "")
             source_id = server.get("name", "")
+            description = server.get("description", "")
+            repo = server.get("repository", {})
+            repo_url = repo.get("url", "") if isinstance(repo, dict) else ""
 
             # Extract remote URLs (streamable-http or sse)
             for remote in server.get("remotes", []):
@@ -78,6 +81,8 @@ async def fetch_mcp_registry(client: httpx.AsyncClient) -> list[dict]:
                         "name": name,
                         "source": "mcp_registry",
                         "source_id": source_id,
+                        "description": description,
+                        "repository_url": repo_url,
                     })
 
         # Pagination
@@ -271,23 +276,42 @@ def get_well_known_agents() -> list[dict]:
 # Deduplication
 # ---------------------------------------------------------------------------
 
+def _is_valid_mcp_url(url: str) -> bool:
+    """Filter out URLs that are NOT actual MCP endpoints."""
+    invalid_patterns = [
+        "glama.ai/mcp/servers",     # Glama directory pages, not endpoints
+        "server.smithery.ai/@",     # Smithery gateway (needs auth token)
+        "{",                         # Template URLs with {variables}
+        "github.com",               # GitHub repo pages
+        "npmjs.com",                # npm pages
+        "pypi.org",                 # PyPI pages
+        "docs.",                    # Documentation sites
+    ]
+    return not any(p in url for p in invalid_patterns)
+
+
 def deduplicate(agents: list[dict]) -> list[dict]:
-    """Deduplicate by normalized URL. Keep the entry with more metadata."""
+    """Deduplicate by normalized URL. Filter invalid URLs. Keep entry with more metadata."""
     from .db import normalize_url
 
     seen: dict[str, dict] = {}
+    filtered = 0
     for a in agents:
         norm = normalize_url(a["url"])
+        if not _is_valid_mcp_url(norm):
+            filtered += 1
+            continue
         if norm in seen:
-            # Keep whichever has a longer name (more metadata)
             existing = seen[norm]
             if len(a.get("name", "")) > len(existing.get("name", "")):
-                a["url"] = norm  # Use normalized
+                a["url"] = norm
                 seen[norm] = a
         else:
             a["url"] = norm
             seen[norm] = a
 
+    if filtered:
+        logger.info(f"Filtered out {filtered} non-MCP URLs (directory pages, templates, etc.)")
     return list(seen.values())
 
 
@@ -338,18 +362,26 @@ async def discover_agents(
     logger.info(f"Deduplication: {len(all_agents)} → {len(unique)} unique agents")
 
     # Store in SQLite
+    from .db import get_agent_by_url, upsert_agent_metadata
     new_count = 0
     existing_count = 0
     for a in unique:
-        from .db import get_agent_by_url
         existing = get_agent_by_url(a["url"], db_path)
-        upsert_agent(
+        agent_id = upsert_agent(
             url=a["url"],
             name=a.get("name", ""),
             source=a.get("source", ""),
             source_id=a.get("source_id", ""),
             db_path=db_path,
         )
+        # Store registry metadata if available
+        if a.get("description") or a.get("repository_url"):
+            upsert_agent_metadata(
+                agent_id=agent_id,
+                registry_description=a.get("description", ""),
+                repository_url=a.get("repository_url", ""),
+                db_path=db_path,
+            )
         if existing:
             existing_count += 1
         else:

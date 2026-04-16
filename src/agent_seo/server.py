@@ -22,10 +22,10 @@ import json
 import os
 import time
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, HTMLResponse
 
 from . import __version__
 from .scanner import scan_agent_v2
@@ -46,6 +46,22 @@ app = FastAPI(
     description="SEO for Agents — Score any AI agent endpoint on trust & capability metrics",
     version=__version__,
 )
+
+
+# ---------------------------------------------------------------------------
+# Dashboard
+# ---------------------------------------------------------------------------
+
+@app.get("/", response_class=HTMLResponse)
+async def dashboard():
+    """Serve the agent leaderboard dashboard."""
+    import os as _os
+    index_path = _os.path.join(_os.path.dirname(__file__), "static", "index.html")
+    try:
+        with open(index_path) as f:
+            return HTMLResponse(f.read())
+    except FileNotFoundError:
+        return HTMLResponse("<h1>Dashboard not found</h1>", status_code=404)
 
 
 # ---------------------------------------------------------------------------
@@ -70,16 +86,17 @@ def startup_init_db():
 async def leaderboard_endpoint(
     page: int = 1,
     per_page: int = 50,
-    min_score: int | None = None,
-    grade: str | None = None,
+    min_score: Optional[int] = None,
+    grade: Optional[str] = None,
     sort_by: str = "total_score",
     sort_dir: str = "desc",
+    search: Optional[str] = None,
 ):
-    """Paginated agent leaderboard with filters."""
+    """Paginated agent leaderboard with filters and search."""
     try:
         from .db import query_leaderboard
         return query_leaderboard(
-            page=page, per_page=per_page,
+            page=page, per_page=per_page, search=search,
             min_score=min_score, grade=grade,
             sort_by=sort_by, sort_dir=sort_dir,
         )

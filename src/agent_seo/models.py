@@ -69,6 +69,7 @@ class ScoreResult:
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     categories: list[Category] = field(default_factory=list)
     mcp_info: Optional[MCPInfo] = None
+    github_info: Optional[dict] = None  # GitHub repo data if found
     errors: list[str] = field(default_factory=list)
     latency_ms: dict = field(default_factory=dict)  # endpoint -> latency
 
@@ -144,6 +145,7 @@ class ScoreResult:
                 "tool_count": self.mcp_info.tool_count,
                 "handshake_latency_ms": self.mcp_info.handshake_latency_ms,
             } if self.mcp_info else None,
+            "github_info": self.github_info,
             "latency_ms": self.latency_ms,
             "errors": self.errors,
         }

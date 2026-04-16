@@ -115,6 +115,23 @@ def init_db(db_path: str | None = None):
                 pct_with_health REAL
             );
 
+            CREATE TABLE IF NOT EXISTS agent_metadata (
+                agent_id INTEGER PRIMARY KEY REFERENCES agents(id),
+                description TEXT DEFAULT '',
+                registry_description TEXT DEFAULT '',
+                repository_url TEXT DEFAULT '',
+                tools_json TEXT DEFAULT '[]',
+                server_name TEXT DEFAULT '',
+                server_version TEXT DEFAULT '',
+                protocol_version TEXT DEFAULT '',
+                transport_type TEXT DEFAULT '',
+                capabilities_json TEXT DEFAULT '{}',
+                tags TEXT DEFAULT '[]',
+                maintainer TEXT DEFAULT '',
+                org TEXT DEFAULT '',
+                updated_at TEXT NOT NULL
+            );
+
             CREATE INDEX IF NOT EXISTS idx_scores_agent ON scores(agent_id);
             CREATE INDEX IF NOT EXISTS idx_scores_date ON scores(scored_at);
             CREATE INDEX IF NOT EXISTS idx_changes_agent ON score_changes(agent_id);
@@ -411,6 +428,96 @@ def upsert_github_cache(
 
 
 # ---------------------------------------------------------------------------
+# Agent metadata
+# ---------------------------------------------------------------------------
+
+def upsert_agent_metadata(
+    agent_id: int,
+    description: str = "",
+    registry_description: str = "",
+    repository_url: str = "",
+    tools: list[dict] | None = None,
+    server_name: str = "",
+    server_version: str = "",
+    protocol_version: str = "",
+    transport_type: str = "",
+    capabilities: dict | None = None,
+    tags: list[str] | None = None,
+    maintainer: str = "",
+    org: str = "",
+    db_path: str | None = None,
+):
+    """Insert or update agent metadata. Only overwrites non-empty fields."""
+    now = datetime.now(timezone.utc).isoformat()
+    with get_db(db_path) as conn:
+        existing = conn.execute(
+            "SELECT * FROM agent_metadata WHERE agent_id = ?", (agent_id,)
+        ).fetchone()
+
+        if existing:
+            # Only update non-empty fields
+            updates = {}
+            if description:
+                updates["description"] = description
+            if registry_description:
+                updates["registry_description"] = registry_description
+            if repository_url:
+                updates["repository_url"] = repository_url
+            if tools is not None and len(tools) > 0:
+                updates["tools_json"] = json.dumps(tools)
+            if server_name:
+                updates["server_name"] = server_name
+            if server_version:
+                updates["server_version"] = server_version
+            if protocol_version:
+                updates["protocol_version"] = protocol_version
+            if transport_type:
+                updates["transport_type"] = transport_type
+            if capabilities is not None:
+                updates["capabilities_json"] = json.dumps(capabilities)
+            if tags is not None:
+                updates["tags"] = json.dumps(tags)
+            if maintainer:
+                updates["maintainer"] = maintainer
+            if org:
+                updates["org"] = org
+            if updates:
+                updates["updated_at"] = now
+                sets = ", ".join(f"{k} = ?" for k in updates)
+                vals = list(updates.values()) + [agent_id]
+                conn.execute(f"UPDATE agent_metadata SET {sets} WHERE agent_id = ?", vals)
+        else:
+            conn.execute(
+                """INSERT INTO agent_metadata (
+                    agent_id, description, registry_description, repository_url,
+                    tools_json, server_name, server_version, protocol_version,
+                    transport_type, capabilities_json, tags, maintainer, org, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    agent_id, description, registry_description, repository_url,
+                    json.dumps(tools or []), server_name, server_version, protocol_version,
+                    transport_type, json.dumps(capabilities or {}),
+                    json.dumps(tags or []), maintainer, org, now,
+                ),
+            )
+
+
+def get_agent_metadata(agent_id: int, db_path: str | None = None) -> Optional[dict]:
+    """Get metadata for an agent."""
+    with get_db(db_path) as conn:
+        row = conn.execute(
+            "SELECT * FROM agent_metadata WHERE agent_id = ?", (agent_id,)
+        ).fetchone()
+        if not row:
+            return None
+        d = dict(row)
+        d["tools_json"] = json.loads(d["tools_json"]) if d["tools_json"] else []
+        d["capabilities_json"] = json.loads(d["capabilities_json"]) if d["capabilities_json"] else {}
+        d["tags"] = json.loads(d["tags"]) if d["tags"] else []
+        return d
+
+
+# ---------------------------------------------------------------------------
 # Ecosystem stats
 # ---------------------------------------------------------------------------
 
@@ -489,9 +596,10 @@ def query_leaderboard(
     grade: str | None = None,
     sort_by: str = "total_score",
     sort_dir: str = "desc",
+    search: str | None = None,
     db_path: str | None = None,
 ) -> dict:
-    """Query the leaderboard with pagination and filters."""
+    """Query the leaderboard with pagination, filters, and search."""
     allowed_sorts = {"total_score", "github_stars", "name", "scored_at", "mcp_tool_count"}
     if sort_by not in allowed_sorts:
         sort_by = "total_score"
@@ -522,6 +630,9 @@ def query_leaderboard(
         if grade:
             base_query += " AND s.grade = ?"
             params.append(grade.upper())
+        if search:
+            base_query += " AND (a.name LIKE ? OR a.url LIKE ?)"
+            params.extend([f"%{search}%", f"%{search}%"])
 
         # Count total
         count_query = f"SELECT COUNT(*) as cnt FROM ({base_query})"
@@ -583,9 +694,13 @@ def get_leaderboard_entry(url: str, db_path: str | None = None) -> Optional[dict
         # Material changes
         changes = get_score_changes(agent_id, limit=10, db_path=db_path)
 
+        # Metadata (tools, description, server info)
+        metadata = get_agent_metadata(agent_id, db_path)
+
         return {
             "agent": agent_dict,
             "current_score": latest,
+            "metadata": metadata,
             "history": history,
             "changes": changes,
         }

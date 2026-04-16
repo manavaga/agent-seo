@@ -88,67 +88,80 @@ def batch(urls: tuple[str, ...], save: bool):
 
 @main.command()
 @click.option("--skip-smithery", is_flag=True, help="Skip Smithery registry (no token needed)")
-def discover(skip_smithery: bool):
+@click.option("--json-output", is_flag=True, help="Output JSON (for cron/automation)")
+def discover(skip_smithery: bool, json_output: bool):
     """Discover new agents from MCP registries."""
     import asyncio
     from .sourcer import discover_agents
     from .db import init_db
 
     init_db()
-    console.print("[bold]Discovering agents from registries...[/bold]\n")
+    if not json_output:
+        console.print("[bold]Discovering agents from registries...[/bold]\n")
 
     result = asyncio.run(discover_agents(skip_smithery=skip_smithery))
 
-    console.print(f"\n[bold green]Discovery complete![/bold green]")
-    console.print(f"  New agents:  {result['new']}")
-    console.print(f"  Existing:    {result['existing']}")
-    console.print(f"  Total in DB: {result['total']}")
-    console.print(f"  Sources:     {result['sources']}")
+    if json_output:
+        click.echo(json.dumps(result))
+    else:
+        console.print(f"\n[bold green]Discovery complete![/bold green]")
+        console.print(f"  New agents:  {result['new']}")
+        console.print(f"  Existing:    {result['existing']}")
+        console.print(f"  Total in DB: {result['total']}")
+        console.print(f"  Sources:     {result['sources']}")
 
 
 @main.command()
 @click.option("--concurrency", "-c", default=5, type=int, help="Max concurrent scans")
 @click.option("--skip-mcp", is_flag=True, help="Skip MCP handshake (faster, HTTP only)")
 @click.option("--limit", "-n", default=None, type=int, help="Score only first N agents (for testing)")
-def rescore(concurrency: int, skip_mcp: bool, limit: int | None):
+@click.option("--json-output", is_flag=True, help="Output JSON (for cron/automation)")
+def rescore(concurrency: int, skip_mcp: bool, limit, json_output: bool):
     """Rescore all active agents. Resumable — skips agents scored today."""
     import asyncio
-    from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn, TimeElapsedColumn
     from .batch_scorer import rescore_all
     from .db import init_db
 
     init_db()
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-        TimeElapsedColumn(),
-        console=console,
-    ) as progress:
-        task = None
-
-        def on_progress(completed: int, total: int, url: str):
-            nonlocal task
-            if task is None:
-                task = progress.add_task(f"Scoring {total} agents", total=total)
-            progress.update(task, completed=completed, description=f"[dim]{url[:50]}[/dim]")
-
+    if json_output:
+        # Quiet mode for cron
+        import logging
+        logging.basicConfig(level=logging.WARNING)
         result = asyncio.run(rescore_all(
-            concurrency=concurrency,
-            skip_mcp=skip_mcp,
-            limit=limit,
-            progress_cb=on_progress,
+            concurrency=concurrency, skip_mcp=skip_mcp, limit=limit,
         ))
+        click.echo(json.dumps(result))
+    else:
+        from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn, TimeElapsedColumn
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+            TimeElapsedColumn(),
+            console=console,
+        ) as progress:
+            task = None
 
-    console.print(f"\n[bold green]Rescore complete![/bold green]")
-    console.print(f"  Scored:   {result['scored']}")
-    console.print(f"  Failed:   {result['failed']}")
-    console.print(f"  Changes:  {result['changes']}")
-    console.print(f"  Skipped:  {result['skipped']}")
-    console.print(f"  Duration: {result['duration_s']}s")
-    console.print(f"  Avg score: {result['avg_score']}")
+            def on_progress(completed: int, total: int, url: str):
+                nonlocal task
+                if task is None:
+                    task = progress.add_task(f"Scoring {total} agents", total=total)
+                progress.update(task, completed=completed, description=f"[dim]{url[:50]}[/dim]")
+
+            result = asyncio.run(rescore_all(
+                concurrency=concurrency, skip_mcp=skip_mcp, limit=limit,
+                progress_cb=on_progress,
+            ))
+
+        console.print(f"\n[bold green]Rescore complete![/bold green]")
+        console.print(f"  Scored:   {result['scored']}")
+        console.print(f"  Failed:   {result['failed']}")
+        console.print(f"  Changes:  {result['changes']}")
+        console.print(f"  Skipped:  {result['skipped']}")
+        console.print(f"  Duration: {result['duration_s']}s")
+        console.print(f"  Avg score: {result['avg_score']}")
 
 
 @main.command()
